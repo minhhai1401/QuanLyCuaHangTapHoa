@@ -1,0 +1,375 @@
+﻿@model QuanLyCuaHangTapHoa.Models.NhanVien
+
+@{
+    ViewBag.Title = "Thông tin nhân viên";
+    Layout = "~/Views/Shared/_layoutadmin.cshtml";
+
+    //TimeSpan duration = DateTime.Now - Model.NgayTao.GetValueOrDefault(DateTime.Now);
+    //string activityDuration = "";
+
+    //if (duration.TotalDays >= 365)
+    //{
+    //    int years = (int)(duration.TotalDays / 365);
+    //    int remainingDays = (int)(duration.TotalDays % 365);
+    //    int months = remainingDays / 30;
+    //    activityDuration = $"{years} năm {months} tháng";
+    //}
+    //else if (duration.TotalDays >= 30)
+    //{
+    //    int months = (int)(duration.TotalDays / 30);
+    //    int days = (int)(duration.TotalDays % 30);
+    //    activityDuration = $"{months} tháng {days} ngày";
+    //}
+    //else
+    //{
+    //    activityDuration = $"{(int)duration.TotalDays} ngày";
+    //}
+}
+<div class="container">
+    <div class="dashboard-header">
+        <h1 class="page-title">
+            <i class="fas fa-user-circle"></i>
+            @Model.FullName
+        </h1>
+        <div class="page-subtitle">Mã nhân viên: #@Model.Id</div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">Chức vụ</div>
+                <div class="stat-value">@Model.ChucVu.ChucVu1</div>
+            </div>
+            @*<div class="stat-item">
+                    <div class="stat-label">Thời gian hoạt động</div>
+                    <div class="stat-value">@activityDuration</div>
+                </div>*@
+            <div class="stat-item">
+                <div class="stat-label">Trạng thái</div>
+                <div class="stat-value">
+                    <i class="fas fa-circle" style="color: #4ade80; font-size: 0.8rem;"></i>
+                    Đang làm việc
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-container">
+        <div class="detail">
+            <div class="detail__avatar">
+                @if (string.IsNullOrEmpty(Model.Picture))
+                {
+                    <img src="~/Hinh/user.jpg" alt="Ảnh đại diện" />
+                }
+                else
+                {
+                    <img src="~/Hinh/NhanVien/@Model.Picture" alt="Ảnh đại diện" />
+                }
+            </div>
+            <div class="detail__info">
+                <div class="detail__item">
+                    <label>Họ và tên:</label>
+                    <span class="detail__value">@Model.FullName</span>
+                </div>
+                <div class="detail__item">
+                    <label>Email:</label>
+                    <span class="detail__value">@Model.Email</span>
+                </div>
+                <div class="detail__item">
+                    <label>Địa chỉ thường trú:</label>
+                    <span class="detail__value">@Model.Address</span>
+                </div>
+                <div class="detail__item">
+                    <label>Ngày sinh:</label>
+                    <span class="detail__value">@(Model.NgaySinh?.ToString("dd/MM/yyyy"))</span>
+                </div>
+                <div class="detail__item">
+                    <label>Số điện thoại:</label>
+                    <span class="detail__value">@Model.Sdt</span>
+                </div>
+                <div class="detail__item">
+                    <label>Chức vụ:</label>
+                    <span class="detail__value">@Model.ChucVu.ChucVu1</span>
+                </div>
+                <div class="detail__item">
+                    <label>Giới tính:</label>
+                    <span class="detail__value">
+                        @if (Model.Sex == true)
+                        {
+                            <span class="gender-badge male">
+                                <i class="fas fa-mars"></i>
+                                Nam
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="gender-badge female">
+                                <i class="fas fa-venus"></i>
+                                Nữ
+                            </span>
+                        }
+                    </span>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-edit" type="button" onclick="location.href='@Url.Action("Edit", "NhanVien", new { id = Model.Id })'">
+                        <i class="fas fa-edit"></i>
+                        Chỉnh sửa thông tin
+                    </button>
+                    <a class="btn btn-cancel" href="@Url.Action("Index", "NhanVien")">
+                        <i class="fas fa-times"></i>
+                        Hủy bỏ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+    .gender-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+        .gender-badge.male {
+            background: #f0fdf4;
+            color: #16a34a;
+            border-color: #16a34a;
+        }
+
+        .gender-badge.female {
+            background: #fef2f2;
+            color: #dc2626;
+            border-color: #dc2626;
+        }
+
+        .gender-badge i {
+            font-size: 1rem;
+        }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    body {
+        background: linear-gradient(135deg, #f6fff8 0%, #f1f5f9 100%);
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.25);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: rotate 20s linear infinite;
+        }
+
+    @@keyframes rotate {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stats {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-item {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        backdrop-filter: blur(10px);
+        flex: 1;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    .detail-container {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .detail {
+        display: flex;
+        gap: 3rem;
+        align-items: flex-start;
+    }
+
+    .detail__avatar {
+        flex: 0 0 300px;
+        position: relative;
+    }
+
+        .detail__avatar img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 4px solid #ffffff;
+        }
+
+    .detail__info {
+        flex: 1;
+    }
+
+    .detail__item {
+        margin: 1rem 0;
+        padding: 0.875rem 1rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+        .detail__item:hover {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .detail__item label {
+            font-weight: 600;
+            color: #1e293b;
+            width: 180px;
+            margin: 0;
+        }
+
+    .detail__value {
+        color: #475569;
+        flex: 1;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-edit {
+        background: #22c55e;
+        color: white;
+    }
+
+        .btn-edit:hover {
+            background: #16a34a;
+            transform: translateY(-1px);
+        }
+
+    .btn-cancel {
+        background: #e2e8f0;
+        color: #475569;
+    }
+
+        .btn-cancel:hover {
+            background: #f1f5f9;
+        }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .detail {
+            flex-direction: column;
+        }
+
+        .detail__avatar {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .stats {
+            flex-direction: column;
+        }
+    }
+</style>

@@ -1,0 +1,172 @@
+﻿@model QuanLyCuaHangTapHoa.Models.Catalog
+@{
+    ViewBag.Title = "Chỉnh sửa danh mục";
+    Layout = "~/Views/Shared/_layoutadmin.cshtml";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chỉnh Sửa Danh Mục</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.ID)
+
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-edit"></i>
+                    Chỉnh Sửa Danh Mục
+                </h1>
+            </div>
+
+            <div class="form-card">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CatalogCode, "Mã Danh Mục", new { @class = "control-label" })
+                    @Html.EditorFor(model => model.CatalogCode, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.CatalogCode, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CatalogName, "Nhãn Hiệu", new { @class = "control-label" })
+                    @Html.EditorFor(model => model.CatalogName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.CatalogName, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductOrigin, "Xuất Xứ", new { @class = "control-label" })
+                    @Html.EditorFor(model => model.ProductOrigin, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.ProductOrigin, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Lưu Thay Đổi
+                    </button>
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Quay Lại
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</body>
+</html>
+
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    body {
+        background: #f6f8ff;
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-header {
+        background: #2563eb;
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        color: white;
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .control-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+        .form-control:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+    .text-danger {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+    .btn-secondary {
+        background: #1e517b;
+        color: #475569;
+    }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+</style>

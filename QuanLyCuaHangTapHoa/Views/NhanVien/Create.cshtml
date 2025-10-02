@@ -1,0 +1,449 @@
+﻿@model QuanLyCuaHangTapHoa.Models.NhanVien
+
+@{
+    ViewBag.Title = "Thêm nhân viên mới";
+    Layout = "~/Views/Shared/_layoutadmin.cshtml";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Thêm Nhân Viên Mới</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        @using (Html.BeginForm("Create", "NhanVien", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-plus-circle"></i>
+                    Thêm Nhân Viên Mới
+                </h1>
+            </div>
+
+            <div class="form-card">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.FullName, "Họ và Tên", new { @class = "control-label" })
+                    @Html.EditorFor(model => model.FullName, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.FullName, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Email, "Email", new { @class = "control-label" })
+                    @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Password, "Mật Khẩu", new { @class = "control-label" })
+                    @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MaChucVu, "Chọn Chức Vụ", new { @class = "control-label" })
+                    @Html.DropDownList("MaChucVu", null, htmlAttributes: new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.MaChucVu, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NgaySinh, "Ngày Sinh", new { @class = "control-label" })
+                    @Html.EditorFor(model => model.NgaySinh, new { htmlAttributes = new { @type = "date", @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.NgaySinh, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Address, "Địa Chỉ Thường Trú", new { @class = "control-label" })
+                    @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Sdt, "Số Điện Thoại", new { @class = "control-label" })
+                    @Html.EditorFor(model => model.Sdt, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Sdt, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label">Giới tính</label>
+                    <div class="gender-select">
+                        <label class="gender-option">
+                            @Html.RadioButtonFor(model => model.Sex, true, new { @id = "male" })
+                            <span class="gender-badge male">
+                                <i class="fas fa-mars"></i>
+                                Nam
+                            </span>
+                        </label>
+                        <label class="gender-option">
+                            @Html.RadioButtonFor(model => model.Sex, false, new { @id = "female" })
+                            <span class="gender-badge female">
+                                <i class="fas fa-venus"></i>
+                                Nữ
+                            </span>
+                        </label>
+                    </div>
+                    @Html.ValidationMessageFor(model => model.Sex, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label">Ảnh Nhân Viên</label>
+                    <div class="image-upload-container">
+                        <div class="image-preview" id="imagePreview">
+                            <div class="image-preview-placeholder">
+                                <i class="fas fa-image fa-2x"></i>
+                                <p>Xem trước ảnh</p>
+                            </div>
+                        </div>
+                        <label for="file" class="custom-file-upload">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            Chọn Ảnh
+                        </label>
+                        <input type="file" name="file" id="file" accept="image/*" />
+                        <div class="selected-file-name" id="fileName"></div>
+                        @Html.ValidationMessageFor(model => model.Picture, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Tạo Nhân Viên
+                    </button>
+                    <a href="@Url.Action("Index", "NhanVien")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Hủy Bỏ
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+
+    <script>
+        document.getElementById('file').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('imagePreview');
+            const fileName = document.getElementById('fileName');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                }
+                reader.readAsDataURL(file);
+                fileName.textContent = file.name;
+            } else {
+                preview.innerHTML = `
+                            <div class="image-preview-placeholder">
+                                <i class="fas fa-image fa-2x"></i>
+                                <p>Xem trước ảnh</p>
+                            </div>`;
+                fileName.textContent = '';
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    body {
+        background: linear-gradient(135deg, #f6fff8 0%, #f1fff5 100%);
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-top: 2rem;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        color: white;
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .control-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        text-align: left;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+
+    select.form-control {
+        padding-left: 0.75rem;
+        background-position: right 0.75rem center;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%234B5563' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.5l-5-5h10l-5 5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        padding-right: 2.5rem;
+    }
+
+    .text-danger {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: #22c55e;
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background: #16a34a;
+            transform: translateY(-1px);
+        }
+
+    .btn-secondary {
+        background: #67809f;
+        color: #475569;
+    }
+
+        .btn-secondary:hover {
+            background: #c2f970;
+        }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .gender-select {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .gender-option {
+        cursor: pointer;
+    }
+
+        .gender-option input[type="radio"] {
+            display: none;
+        }
+
+    .gender-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+        .gender-badge.male {
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+
+        .gender-badge.female {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+    .gender-option input[type="radio"]:checked + .gender-badge.male {
+        background: #dcfce7;
+        border-color: #16a34a;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+    }
+
+    .gender-option input[type="radio"]:checked + .gender-badge.female {
+        background: #fee2e2;
+        border-color: #dc2626;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    }
+
+    .gender-badge i {
+        font-size: 1rem;
+    }
+
+    .gender-option:hover .gender-badge.male {
+        background: #dcfce7;
+    }
+
+    .gender-option:hover .gender-badge.female {
+        background: #fee2e2;
+    }
+
+    /* Styles cho phần upload ảnh */
+    .image-upload-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .image-preview {
+        width: 200px;
+        height: 200px;
+        border: 2px dashed #e2e8f0;
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+        background: #f8fafc;
+        transition: all 0.3s ease;
+    }
+
+        .image-preview:hover {
+            border-color: #22c55e;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+    .image-preview-placeholder {
+        color: #94a3b8;
+        text-align: center;
+        padding: 1rem;
+    }
+
+        .image-preview-placeholder i {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+    .custom-file-upload {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: #22c55e;
+        color: white;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+        .custom-file-upload:hover {
+            background: #16a34a;
+            transform: translateY(-1px);
+        }
+
+        .custom-file-upload i {
+            font-size: 1.1rem;
+        }
+
+    #file {
+        display: none;
+    }
+
+    .selected-file-name {
+        margin-top: 0.5rem;
+        color: #64748b;
+        font-size: 0.875rem;
+        text-align: center;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Additional Styles for Better Form Layout */
+    input[type="date"].form-control {
+        text-align: left;
+        padding-right: 0.75rem;
+    }
+
+    input[type="radio"] {
+        width: 1rem;
+        height: 1rem;
+        margin-right: 0.5rem;
+        cursor: pointer;
+    }
+
+    /* Responsive Adjustments */
+    @@media (max-width: 640px) {
+        body {
+            padding: 1rem;
+        }
+
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>

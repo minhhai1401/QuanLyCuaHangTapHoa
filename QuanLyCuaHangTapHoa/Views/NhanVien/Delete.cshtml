@@ -1,0 +1,246 @@
+﻿@model QuanLyCuaHangTapHoa.Models.NhanVien
+@{
+    ViewBag.Title = "Xóa Nhân Viên";
+    Layout = "~/Views/Shared/_layoutadmin.cshtml";
+}
+
+<div class="delete-container">
+    <div class="delete-card">
+        <div class="delete-icon">
+            <i class="fas fa-user-times"></i>
+        </div>
+
+        <div class="delete-content">
+            <h2 class="delete-title">Xác nhận xóa nhân viên</h2>
+            <p class="delete-text">Bạn có chắc chắn muốn xóa nhân viên:</p>
+
+            <div class="employee-info">
+                <div class="employee-avatar">
+                    @if (string.IsNullOrEmpty(Model.Picture))
+                    {
+                        <img src="~/Hinh/user.jpg" alt="@Model.FullName" />
+                    }
+                    else
+                    {
+                        <img src="~/Hinh/NhanVien/@Model.Picture" alt="@Model.FullName" />
+                    }
+                </div>
+                <div class="employee-details">
+                    <h3 class="employee-name">@Model.FullName</h3>
+                    <p class="employee-position">@Model.ChucVu.ChucVu1</p>
+                </div>
+            </div>
+
+            <div class="delete-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan sẽ bị xóa vĩnh viễn.</p>
+            </div>
+
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+                <div class="button-group">
+                    <button type="submit" class="btn btn-delete">
+                        <i class="fas fa-trash-alt"></i>
+                        Xác nhận xóa
+                    </button>
+                    <a href="@Url.Action("Index", "NhanVien")" class="btn btn-cancel">
+                        <i class="fas fa-times"></i>
+                        Hủy bỏ
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .delete-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f6fff8 0%, #f1f5f9 100%);
+    }
+
+    .delete-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 25px -5px rgba(34, 197, 94, 0.1), 0 10px 10px -5px rgba(34, 197, 94, 0.04);
+        overflow: hidden;
+        max-width: 600px;
+        width: 100%;
+        position: relative;
+    }
+
+    .delete-icon {
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        color: white;
+        font-size: 3rem;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+        .delete-icon::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 20px solid #16a34a;
+        }
+
+    .delete-content {
+        padding: 2.5rem 2rem 2rem;
+    }
+
+    .delete-title {
+        color: #1e293b;
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .delete-text {
+        color: #475569;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .employee-info {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        background: #f8fafc;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .employee-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid #22c55e;
+    }
+
+        .employee-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .employee-details {
+        flex: 1;
+    }
+
+    .employee-name {
+        color: #1e293b;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .employee-position {
+        color: #64748b;
+        font-size: 0.875rem;
+    }
+
+    .delete-warning {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem;
+        background: #fef2f2;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+        .delete-warning i {
+            color: #dc2626;
+            font-size: 1.25rem;
+        }
+
+        .delete-warning p {
+            color: #991b1b;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-delete {
+        background: #dc2626;
+        color: white;
+    }
+
+        .btn-delete:hover {
+            background: #b91c1c;
+            transform: translateY(-1px);
+        }
+
+    .btn-cancel {
+        background: #e2e8f0;
+        color: #475569;
+    }
+
+        .btn-cancel:hover {
+            background: #f1f5f9;
+        }
+
+    /* Responsive Design */
+    @@media (max-width: 640px) {
+        .delete-container {
+            padding: 1rem;
+        }
+
+        .delete-content {
+            padding: 1.5rem 1rem;
+        }
+
+        .employee-info {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>

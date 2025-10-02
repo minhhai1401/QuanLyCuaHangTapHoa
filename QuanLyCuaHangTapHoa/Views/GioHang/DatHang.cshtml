@@ -1,0 +1,944 @@
+﻿@model List<QuanLyCuaHangTapHoa.Models.Giohang>
+@{
+    ViewBag.Title = "Đặt hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var kh = (QuanLyCuaHangTapHoa.Models.KhachHang)Session["TaiKhoan"];
+    var shippingInfo = Session["OrderShippingInfo"] as QuanLyCuaHangTapHoa.Models.ShippingInfo;
+}
+
+<div class="container py-4">
+    <!-- Progress Steps - Thêm animation và màu sắc rõ ràng hơn -->
+    <div class="cart-header mb-4">
+        <div class="progress-steps d-flex justify-content-center align-items-center gap-3">
+            <div class="step completed">
+                <div class="step-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="step-label">Giỏ hàng</div>
+            </div>
+            <div class="step-line active"></div>
+            <div class="step active">
+                <div class="step-icon pulse">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="step-label">Thanh toán</div>
+            </div>
+            <div class="step-line"></div>
+            <div class="step">
+                <div class="step-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="step-label">Hoàn tất</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Thông tin đơn hàng - Thêm validation trực quan -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-shopping-cart text-primary me-2"></i>
+                        Chi tiết đơn hàng
+                        <span class="badge bg-primary ms-2">@ViewBag.Tongsoluongsanpham sản phẩm</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th scope="col">Sản phẩm</th>
+                                    <th scope="col" class="text-center">Đơn giá</th>
+                                    <th scope="col" class="text-center">Số lượng</th>
+                                    <th scope="col" class="text-end">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr class="product-row" data-product-id="@item.IdProduct">
+                                        <td style="min-width: 300px;">
+                                            <div class="d-flex align-items-center">
+                                                <img src="~/Resources/Pictures/Products/@item.Picture"
+                                                     alt="@item.ProductName"
+                                                     class="img-thumbnail me-3"
+                                                     style="width: 64px; height: 64px; object-fit: cover;" />
+                                                <div>
+                                                    <h6 class="mb-1">@item.ProductName</h6>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            @String.Format("{0:#,0}", item.DonGia)₫
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <span class="stock-status">@item.SoLuong</span>
+                                        </td>
+                                        <td class="align-middle text-end">
+                                            @String.Format("{0:#,0}", item.ThanhTien)₫
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông tin khách hàng -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-shipping-fast text-primary me-2"></i>
+                        Thông tin giao hàng
+                        <small class="text-muted ms-2">
+                            (Thông tin này chỉ áp dụng cho đơn hàng hiện tại)
+                        </small>
+                    </h5>
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="editInfoBtn">
+                        <i class="fas fa-edit"></i> <span>Chỉnh sửa</span>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <form id="shippingInfoForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <label class="text-muted mb-1">Họ và tên</label>
+                                    <div class="info-display">@(shippingInfo?.ShippingName ?? kh.HoTen)</div>
+                                    <div class="info-edit" style="display: none;">
+                                        <input type="text" class="form-control form-control-sm" name="fullName" value="@(shippingInfo?.ShippingName ?? kh.HoTen)">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-group">
+                                    <label class="text-muted mb-1">Số điện thoại</label>
+                                    <div class="info-display">@(shippingInfo?.ShippingPhone ?? kh.Sdt)</div>
+                                    <div class="info-edit" style="display: none;">
+                                        <input type="tel" class="form-control form-control-sm" name="phone" value="@(shippingInfo?.ShippingPhone ?? kh.Sdt)">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="info-group">
+                                    <label class="text-muted mb-1">Địa chỉ nhận hàng</label>
+                                    <div class="info-display">@(shippingInfo?.ShippingAddress ?? kh.Address)</div>
+                                    <div class="info-edit" style="display: none;">
+                                        <textarea class="form-control form-control-sm" name="address" rows="2">@(shippingInfo?.ShippingAddress ?? kh.Address)</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-end" id="saveButtons" style="display: none;">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="cancelEdit">Hủy</button>
+                            <button type="submit" class="btn btn-success btn-sm ms-2">Lưu thay đổi</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thanh toán - Cải thiện UI và thêm thông tin chi tiết -->
+        <div class="col-lg-4">
+            @using (Html.BeginForm("DatHang", "Giohang", FormMethod.Post, new { id = "orderForm" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-money-bill text-primary me-2"></i>
+                            Thanh toán
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Tổng quan đơn hàng -->
+                        <div class="order-summary mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Tổng sản phẩm:</span>
+                                <span class="fw-medium">@ViewBag.Tongsoluong</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Tạm tính:</span>
+                                <span class="fw-medium">@String.Format("{0:#,0}", ViewBag.Tongtien)₫</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Phí vận chuyển:</span>
+                                <span class="text-success fw-medium">Miễn phí</span>
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <span class="h5 mb-0">Tổng cộng:</span>
+                            <span class="h4 mb-0 text-primary">@String.Format("{0:#,0}", ViewBag.Tongtien)₫</span>
+                        </div>
+
+                        <!-- Phương thức thanh toán - Thêm animation và thông tin chi tiết -->
+                        <div class="payment-methods mb-4">
+                            <h6 class="mb-3">Phương thức thanh toán</h6>
+                            <div class="payment-option mb-3">
+                                <div class="form-check p-3 border rounded payment-radio">
+                                    <input class="form-check-input" type="radio" name="paymentMethod"
+                                           id="codPayment" value="COD" checked>
+                                    <label class="form-check-label w-100" for="codPayment">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="cod-icon me-2">
+                                                        <i class="fas fa-money-bill-wave"></i>
+                                                    </div>
+                                                    <div>
+                                                        <span class="payment-method-title">Thanh toán khi nhận hàng (COD)</span>
+                                                        <small class="d-block text-muted mt-1">
+                                                            Thanh toán bằng tiền mặt khi nhận hàng
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <i class="fas fa-check-circle text-cod payment-check"></i>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            @*<div class="payment-option mb-3">
+                                <div class="form-check p-3 border rounded payment-radio">
+                                    <input class="form-check-input" type="radio" name="paymentMethod"
+                                           id="paypalPayment" value="PAYPAL">
+                                    <label class="form-check-label w-100" for="paypalPayment">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="paypal-icon me-2">
+                                                        <img src="~/Content/images/paypal.png" alt="PayPal" style="width: 24px; height: 24px;" />
+                                                    </div>
+                                                    <div>
+                                                        <span class="payment-method-title">PayPal</span>
+                                                        <small class="d-block text-muted mt-1">
+                                                            Thanh toán an toàn qua PayPal
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <i class="fas fa-check-circle text-paypal payment-check"></i>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>*@
+                            <div class="payment-option mb-3">
+                                <div class="form-check p-3 border rounded payment-radio">
+                                    <input class="form-check-input" type="radio" name="paymentMethod"
+                                           id="momoPayment" value="MOMO">
+                                    <label class="form-check-label w-100" for="momoPayment">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="momo-icon me-2">
+                                                        <img src="~/Content/images/MoMo_Logo.png" alt="MoMo" style="width: 24px; height: 24px;" />
+                                                    </div>
+                                                    <div>
+                                                        <span class="payment-method-title">Ví điện tử MoMo</span>
+                                                        <small class="d-block text-muted mt-1">
+                                                            Thanh toán qua ví MoMo
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <i class="fas fa-check-circle text-momo payment-check"></i>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nút đặt hàng - Thêm loading state và validation -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg order-button" id="submitOrder">
+                                <span class="button-text">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    Đặt hàng
+                                </span>
+                                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                            </button>
+                            <a href="@Url.Action("Index", "Giohang")" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Quay lại giỏ hàng
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            console.log('Document ready loaded');
+
+            // Xử lý nút chỉnh sửa
+            $('#editInfoBtn').on('click', function() {
+                console.log('Edit button clicked');
+                const isEditing = $(this).hasClass('editing');
+
+                if (!isEditing) {
+                    // Hiện form chỉnh sửa
+                    $('.info-display').hide();
+                    $('.info-edit').show();
+                    $('#saveButtons').show();
+
+                    // Cập nhật trạng thái nút
+                    $(this)
+                        .addClass('editing btn-secondary')
+                        .removeClass('btn-outline-primary')
+                        .find('span')
+                        .text('Đang chỉnh sửa');
+                    $(this)
+                        .find('i')
+                        .removeClass('fa-edit')
+                        .addClass('fa-times');
+                } else {
+                    cancelEdit();
+                }
+            });
+
+            // Xử lý nút hủy
+            $('#cancelEdit').on('click', function() {
+                cancelEdit();
+            });
+
+            function cancelEdit() {
+                $('.info-display').show();
+                $('.info-edit').hide();
+                $('#saveButtons').hide();
+
+                $('#editInfoBtn')
+                    .removeClass('editing btn-secondary')
+                    .addClass('btn-outline-primary')
+                    .find('span')
+                    .text('Chỉnh sửa');
+                $('#editInfoBtn')
+                    .find('i')
+                    .removeClass('fa-times')
+                    .addClass('fa-edit');
+            }
+
+            // Xử lý form submit
+            $('#shippingInfoForm').on('submit', function (e) {
+                e.preventDefault();
+
+                var formData = {
+                    fullName: $('input[name="fullName"]').val().trim(),
+                    phone: $('input[name="phone"]').val().trim(),
+                    address: $('textarea[name="address"]').val().trim()
+                };
+
+                // Validate
+                if (!formData.fullName || !formData.phone || !formData.address) {
+                    toastr.error('Vui lòng điền đầy đủ thông tin');
+                    return false;
+                }
+
+                // Submit form
+                $.ajax({
+                    url: '/Giohang/CapNhatThongTinGiaoHang',
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        if (response && response.success) {
+                            // Cập nhật UI với dữ liệu từ response
+                            if (response.data) {
+                                // Chỉ cập nhật giao diện hiển thị, không cập nhật session
+                                $('.info-group:eq(0) .info-display').text(response.data.fullName);
+                                $('.info-group:eq(1) .info-display').text(response.data.phone);
+                                $('.info-group:eq(2) .info-display').text(response.data.address);
+
+                                // Cập nhật giá trị trong input
+                                $('input[name="fullName"]').val(response.data.fullName);
+                                $('input[name="phone"]').val(response.data.phone);
+                                $('textarea[name="address"]').val(response.data.address);
+                            }
+
+                            // Ẩn form edit
+                            $('.info-display').show();
+                            $('.info-edit').hide();
+                            $('#saveButtons').hide();
+
+                            // Reset trạng thái nút edit
+                            $('#editInfoBtn')
+                                .removeClass('editing btn-secondary')
+                                .addClass('btn-outline-primary')
+                                .find('span')
+                                .text('Chỉnh sửa');
+                            $('#editInfoBtn')
+                                .find('i')
+                                .removeClass('fa-times')
+                                .addClass('fa-edit');
+
+                            toastr.success('Cập nhật thông tin giao hàng thành công');
+                        } else {
+                            toastr.error(response.message || 'Có lỗi xảy ra');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error:', error);
+                        toastr.error('Có lỗi xảy ra khi cập nhật thông tin giao hàng');
+                    }
+                });
+
+                return false;
+            });
+
+            // Xử lý form đặt hàng
+            $('#orderForm').on('submit', function(e) {
+                e.preventDefault();
+
+                var submitButton = $(this).find('button[type="submit"]');
+                var selectedPayment = $('input[name="paymentMethod"]:checked').val();
+
+                if (!selectedPayment) {
+                    toastr.error('Vui lòng chọn phương thức thanh toán');
+                    return false;
+                }
+
+                switch(selectedPayment) {
+                    case 'PAYPAL':
+                        window.location.href = '@Url.Action("PaymentWithPayPal", "Giohang")';
+                        return false;
+
+                    case 'MOMO':
+                        window.location.href = '@Url.Action("Payment", "Giohang")';
+                        return false;
+
+                    default:
+                        submitButton.prop('disabled', true);
+                        this.submit();
+                        break;
+                }
+            });
+
+            // Style cho payment options
+            $('.payment-radio').on('click', function() {
+                $('.payment-radio').removeClass('selected');
+                $(this).addClass('selected');
+            });
+
+            // Kiểm tra tồn kho realtime
+            function checkStockStatus() {
+                $('.product-row').each(function() {
+                    var productId = $(this).data('product-id');
+                    var stockElement = $(this).find('.stock-status');
+
+                    $.get('/Product/CheckStock/' + productId, function(response) {
+                        if (response.inStock) {
+                            stockElement.removeClass('text-danger').addClass('text-success');
+                        } else {
+                            stockElement.removeClass('text-success').addClass('text-danger');
+                            toastr.warning(`Sản phẩm ${response.productName} đã hết hàng!`);
+                        }
+                    });
+                });
+            }
+
+            setInterval(checkStockStatus, 30000);
+
+            // Hiển thị thông báo nếu có
+            @if (TempData["error"] != null)
+            {
+                <text>
+                toastr.error('@TempData["error"]');
+                </text>
+            }
+            @if (TempData["success"] != null)
+            {
+                <text>
+                toastr.success('@TempData["success"]');
+                </text>
+            }
+        });
+    </script>
+}
+
+<style>
+    /* Animation cho payment selection */
+    .payment-radio {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .payment-radio:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .payment-radio.selected {
+            border-color: #0d6efd !important;
+            background-color: #f8f9fa;
+        }
+
+    .payment-check {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .payment-radio.selected .payment-check {
+        opacity: 1;
+    }
+
+    /* Pulse animation cho active step */
+    .step {
+        position: relative;
+        text-align: center;
+        flex: 0 0 auto;
+        transition: all 0.3s ease;
+    }
+
+        .step.active .step-icon {
+            animation: pulse 2s infinite;
+        }
+
+    .momo-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background-color: #ae2070;
+        color: white;
+        border-radius: 50%;
+        font-weight: bold;
+        font-size: 20px;
+    }
+
+    .paypal-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background-color: #ffffff;
+        border: 1px solid #dce0e4;
+        color: #003087;
+        border-radius: 50%;
+        font-weight: bold;
+        font-size: 20px;
+    }
+
+    .cod-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background-color: #28a745;
+        color: white;
+        border-radius: 50%;
+        font-weight: bold;
+        font-size: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .text-cod {
+        color: #28a745;
+    }
+
+    /* Style khi COD được chọn */
+    .payment-radio:has(#codPayment:checked) {
+        border-color: #28a745 !important;
+        background-color: #f8fff9;
+    }
+
+        .payment-radio:has(#codPayment:checked) .payment-check {
+            color: #28a745;
+            opacity: 1;
+        }
+
+    /* Style khi hover vào COD */
+    .payment-radio:has(#codPayment:hover) {
+        border-color: #28a745;
+    }
+
+    /* Animation cho icon khi được chọn */
+    .payment-radio:has(#codPayment:checked) .cod-icon {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+    }
+
+    /* Thêm hover effect cho icon */
+    .payment-radio:hover .cod-icon {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+    }
+
+    /* Animation khi chọn phương thức thanh toán */
+    .payment-radio input[type="radio"]:checked + label {
+        animation: selectPayment 0.3s ease;
+    }
+
+    @@keyframes selectPayment {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.02);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    /* Làm mịn các transition */
+    .payment-radio {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+        /* Thêm hiệu ứng ripple khi click */
+        .payment-radio:active {
+            transform: scale(0.98);
+        }
+
+        /* Style cho form-check-input radio */
+        .payment-radio .form-check-input {
+            width: 0;
+            height: 0;
+            opacity: 0;
+            position: absolute;
+        }
+
+    /* Responsive adjustments */
+    @@media (max-width: 576px) {
+        .cod-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 18px;
+        }
+
+        .payment-method-title {
+            font-size: 0.9rem;
+        }
+    }
+
+    /* Hover effect cho toàn bộ payment option */
+    .payment-option {
+        transform: translateZ(0);
+        transition: transform 0.3s ease;
+    }
+
+        .payment-option:hover {
+            transform: translateY(-2px);
+        }
+
+    .text-paypal {
+        color: #003087;
+    }
+
+    /* Style khi PayPal được chọn */
+    .payment-radio:has(#paypalPayment:checked) {
+        border-color: #003087 !important;
+        background-color: #f5f7fa;
+    }
+
+        .payment-radio:has(#paypalPayment:checked) .payment-check {
+            color: #003087;
+            opacity: 1;
+        }
+
+    /* Style khi hover vào PayPal */
+    .payment-radio:has(#paypalPayment:hover) {
+        border-color: #003087;
+    }
+
+    .text-momo {
+        color: #ae2070;
+    }
+
+    .payment-radio:has(#momoPayment:checked) {
+        border-color: #ae2070 !important;
+        background-color: #fdf2f7;
+    }
+
+        .payment-radio:has(#momoPayment:checked) .payment-check {
+            color: #ae2070;
+            opacity: 1;
+        }
+
+    .payment-radio:has(#momoPayment:hover) {
+        border-color: #ae2070;
+    }
+
+    @@keyframes pulse {
+        0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.4);
+        }
+
+        70% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 10px rgba(13, 110, 253, 0);
+        }
+
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(13, 110, 253, 0);
+        }
+    }
+
+    /* Progress Steps Styling */
+    .progress-steps {
+        padding: 2rem 0;
+        position: relative;
+    }
+
+    .step-icon {
+        width: 48px;
+        height: 48px;
+        background-color: #e9ecef;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.5rem;
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+
+    .step.completed .step-icon,
+    .step.active .step-icon {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    .step-line {
+        height: 3px;
+        background-color: #e9ecef;
+        flex: 1;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+        .step-line.active {
+            background-color: #0d6efd;
+        }
+
+    .step-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .step.completed .step-label,
+    .step.active .step-label {
+        color: #0d6efd;
+        font-weight: 500;
+    }
+
+    /* Card Styling */
+    .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,.05);
+        transition: all 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,.1);
+        }
+
+    /* Order Summary Styling */
+    .order-summary {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Payment Methods Styling */
+    .payment-methods .payment-option {
+        margin-bottom: 1rem;
+    }
+
+    .payment-radio {
+        border: 2px solid #dee2e6;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .payment-radio:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+        }
+
+        .payment-radio.selected {
+            border-color: #0d6efd;
+            background-color: #f8f9fa;
+        }
+
+    .payment-check {
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .payment-radio.selected .payment-check {
+        opacity: 1;
+    }
+
+    /* Edit Form Styling */
+    .edit-form .form-control {
+        border: 1px solid #ced4da;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        transition: all 0.2s ease;
+    }
+
+        .edit-form .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+    /* Button Styling */
+    .btn {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+    .btn-primary {
+        box-shadow: 0 2px 4px rgba(13, 110, 253, 0.2);
+    }
+
+        .btn-primary:hover {
+            box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
+        }
+
+    /* Product Row Styling */
+    .product-row {
+        transition: all 0.3s ease;
+    }
+
+        .product-row:hover {
+            background-color: #f8f9fa;
+        }
+
+        .product-row img {
+            transition: all 0.3s ease;
+        }
+
+        .product-row:hover img {
+            transform: scale(1.05);
+        }
+
+    /* Stock Status Styling */
+    .stock-status {
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-weight: 500;
+    }
+
+        .stock-status.text-success {
+            background-color: #d1e7dd;
+        }
+
+        .stock-status.text-danger {
+            background-color: #f8d7da;
+        }
+
+    /* Loading State Styling */
+    .order-button:disabled {
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+
+    .spinner-border {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
+    /* Responsive Adjustments */
+    @@media (max-width: 768px) {
+        .progress-steps {
+            flex-direction: column;
+        }
+
+        .step-line {
+            width: 3px;
+            height: 24px;
+            margin: 1rem 0;
+        }
+
+        .payment-radio {
+            padding: 0.75rem;
+        }
+
+        .order-summary {
+            padding: 0.75rem;
+        }
+    }
+
+    /* Toast Notifications */
+    .toastr-custom {
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,.1);
+    }
+
+    /* Info Groups */
+    .info-group {
+        margin-bottom: 1rem;
+    }
+
+    .info-display {
+        font-weight: 500;
+    }
+
+    .info-edit {
+        margin-top: 0.5rem;
+    }
+
+    #editInfoBtn.editing {
+        opacity: 0.8;
+    }
+
+        #editInfoBtn.editing:hover {
+            opacity: 1;
+        }
+
+    /* Animation khi chuyển đổi */
+    .info-display, .info-edit {
+        transition: all 0.3s ease;
+    }
+    /* Edit Button Animation */
+    #editInfoBtn {
+        transition: all 0.3s ease;
+    }
+
+        #editInfoBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+
+        #editInfoBtn.btn-success {
+            animation: saveAnimation 0.5s ease;
+        }
+
+    @@keyframes saveAnimation {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+</style>

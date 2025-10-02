@@ -1,0 +1,144 @@
+﻿@{
+    ViewBag.Title = "Đặt hàng thành công";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="confirmation-page py-5">
+    <div class="container">
+        <!-- Header Section -->
+        <div class="order-header mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body bg-primary text-white rounded">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 mb-2">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Xác nhận đặt hàng
+                            </h1>
+                            <p class="mb-0 opacity-75">Thời gian đặt hàng: @DateTime.Now.ToString("HH:mm, dd/MM/yyyy")</p>
+                        </div>
+                        <div class="order-status">
+                            <span class="badge bg-white text-primary fs-6 px-4 py-2">
+                                <i class="fas fa-clock me-2"></i>
+                                Chờ xử lý
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div class="success-message text-center mb-5">
+            <div class="success-icon mb-4">
+                <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+            </div>
+            <h2 class="mb-3">Đặt hàng thành công!</h2>
+            <p class="text-muted mb-0">Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ xác nhận và giao hàng trong thời gian sớm nhất.</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-center gap-3">
+            <a href="@Url.Action("Index", "XemDonHang")" class="btn btn-lg btn-primary px-4">
+                <i class="fas fa-list me-2"></i>
+                Xem đơn hàng của tôi
+            </a>
+            <a href="@Url.Action("TrangChu", "User")" class="btn btn-lg btn-outline-primary px-4">
+                <i class="fas fa-shopping-bag me-2"></i>
+                Tiếp tục mua sắm
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .confirmation-page {
+            min-height: 80vh;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .order-header .card {
+            overflow: hidden;
+        }
+
+        .order-header .card-body {
+            background: linear-gradient(135deg, var(--bs-primary) 0%, #0d6efd 100%);
+            position: relative;
+        }
+
+            .order-header .card-body::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+                animation: rotate 20s linear infinite;
+            }
+
+        @@keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .success-message {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .success-icon {
+            animation: scaleIn 0.5s ease-out forwards;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes scaleIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .btn {
+            transition: all 0.3s ease;
+        }
+
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Hiển thị thông báo nếu có
+        @if (TempData["success"] != null)
+        {
+            <text>
+            toastr.success('@TempData["success"]');
+            </text>
+        }
+    </script>
+}

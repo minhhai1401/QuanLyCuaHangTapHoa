@@ -1,0 +1,1209 @@
+﻿@model QuanLyCuaHangTapHoa.Models.Product
+
+@{
+    ViewBag.Title = Model.ProductName;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@Url.Action("TrangChu", "User")">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="@Url.Action("TatCaSanPham", "Product")">Sản phẩm</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.ProductName</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Product Image Column -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="position-relative">
+                    <img src="@Model.FullPicturePath" class="card-img-top" alt="@Model.ProductName" loading="lazy">
+                    @if (Model.SoLuong <= 0)
+                    {
+                        <span class="badge bg-danger position-absolute top-0 end-0 m-3">Hết hàng</span>
+                    }
+                    else if (Model.SoLuong <= 50)
+                    {
+                        <span class="badge bg-warning position-absolute top-0 end-0 m-3">Sắp hết</span>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.ProductSale))
+                    {
+                        <div class="position-absolute top-0 start-0 m-3">
+                            <span class="badge bg-danger">-@Model.ProductSale%</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Details Column -->
+        <div class="col-md-6">
+            <div class="product-details">
+                <!-- Product Category -->
+                <div class="mb-3">
+                    <span class="badge bg-secondary">
+                        <i class="fas fa-tag me-1"></i>@Model.Catalog.CatalogName
+                    </span>
+                    @if (Model.ProductSold >= 100)
+                    {
+                        <span class="badge bg-success ms-2">
+                            <i class="fas fa-fire me-1"></i>Bán chạy
+                        </span>
+                    }
+                </div>
+
+                <!-- Product Name -->
+                <h1 class="h2 mb-3">@Model.ProductName</h1>
+
+                <!-- Rating Summary -->
+                <div class="rating-summary mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rating-stars">
+                            @{
+                                var avgRating = ViewBag.AverageRating;
+                                for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= Math.Floor(avgRating))
+                                    {
+                                        <i class="fas fa-star text-warning"></i>
+                                    }
+                                    else if (i - avgRating <= 0.5 && i - avgRating > 0)
+                                    {
+                                        <i class="fas fa-star-half-alt text-warning"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="far fa-star text-warning"></i>
+                                    }
+                                }
+                            }
+                        </div>
+                        <div class="rating-text">
+                            <span class="text-warning fw-bold">@avgRating.ToString("0.0")</span>
+                            <span class="text-muted">(@ViewBag.ReviewCount đánh giá)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Section -->
+                <div class="price-section mb-4">
+                    @if (Model.PriceOld.HasValue && Model.PriceOld > Model.UnitPrice)
+                    {
+                        <div class="old-price text-muted text-decoration-line-through h5">
+                            @string.Format("{0:#,0}", Model.PriceOld)đ
+                        </div>
+                    }
+                    <div class="current-price h3 text-primary fw-bold">
+                        @string.Format("{0:#,0}", Model.UnitPrice)đ
+                    </div>
+                </div>
+
+                <!-- Product Stats -->
+                <div class="product-stats mb-4">
+                    <div class="row g-3">
+                        <div class="col-auto">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-boxes me-2 text-muted"></i>
+                                <div>
+                                    <small class="text-muted d-block">Số lượng còn</small>
+                                    <strong>@Model.SoLuong</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-shopping-cart me-2 text-muted"></i>
+                                <div>
+                                    <small class="text-muted d-block">Đã bán</small>
+                                    <strong>@Model.ProductSold</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add to Cart Section -->
+                @if (Model.SoLuong > 0)
+                {
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="quantity-selector">
+                                <label class="form-label">Số lượng:</label>
+                                <div class="input-group" style="width: 150px;">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="decrementQuantity()">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" class="form-control text-center" id="quantity" value="1" min="1" max="@Model.SoLuong">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="incrementQuantity()">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <a href="@Url.Action("ThemGioHang", "Giohang", new { id = Model.Id, strURL = Request.Url.ToString() })"
+                               class="btn btn-primary btn-lg w-100 add-to-cart-btn"
+                               data-product-id="@Model.Id">
+                                <i class="fas fa-cart-plus me-2"></i>Thêm vào giỏ hàng
+                            </a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>Sản phẩm hiện đã hết hàng
+                    </div>
+                }
+
+                <!-- Product Description -->
+                <div class="product-description">
+                    <h4 class="mb-3">Mô tả sản phẩm</h4>
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            @if (!string.IsNullOrEmpty(Model.MoTa))
+                            {
+                                @Html.Raw(Model.MoTa)
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-0">Chưa có mô tả cho sản phẩm này.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="reviews-section mt-5">
+        <h3 class="mb-4">Đánh giá sản phẩm</h3>
+
+        @if (Session["UserID"] != null)
+        {
+            <div class="card mb-4">
+                <div class="card-body">
+                    @if (TempData["ReviewError"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["ReviewError"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    @if (TempData["ReviewSuccess"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["ReviewSuccess"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @using (Html.BeginForm("GuiDanhGia", "Product", FormMethod.Post, new { id = "review-form", @class = "needs-validation" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id_sp" value="@Model.Id" />
+                        <input type="hidden" name="rating" value="5" />
+
+                        <div class="mb-3">
+                            <label class="form-label">Nội dung đánh giá</label>
+                            <textarea class="form-control" name="content" rows="3"
+                                      minlength="10" required
+                                      placeholder="Chia sẻ cảm nhận của bạn về sản phẩm (tối thiểu 10 ký tự)"></textarea>
+                            <div class="invalid-feedback">
+                                Vui lòng nhập nội dung đánh giá ít nhất 10 ký tự
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            Gửi đánh giá
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                Vui lòng <a href="@Url.Action("Login", "User")" class="alert-link">đăng nhập</a> để đánh giá sản phẩm
+            </div>
+        }
+
+        <!-- Hiển thị danh sách đánh giá -->
+        <div class="reviews-list" id="reviewsList">
+            @if (ViewBag.Reviews != null && ViewBag.Reviews.Count > 0)
+            {
+                @Html.Partial("_ReviewsList", (IEnumerable<QuanLyCuaHangTapHoa.Models.DanhGia>)ViewBag.Reviews)
+
+                if (ViewBag.ReviewCount > ViewBag.Reviews.Count)
+                {
+                    <div class="text-center mt-4">
+                        <button id="loadMoreReviews" class="btn btn-outline-primary">
+                            Xem thêm đánh giá
+                        </button>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-comments fa-3x mb-3"></i>
+                    <p>Chưa có đánh giá nào cho sản phẩm này</p>
+                </div>
+            }
+        </div>
+    </div>
+    <!-- Related Products Section -->
+    <div class="related-products-section mt-5">
+        <div class="section-header d-flex justify-content-between align-items-center mb-4">
+            <h3 class="m-0">Sản phẩm tương tự</h3>
+            <div class="section-actions">
+                <button class="btn btn-outline-primary btn-sm rounded-pill px-3 scroll-controls" id="scrollLeftBtn">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="btn btn-outline-primary btn-sm rounded-pill px-3 scroll-controls" id="scrollRightBtn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        @if (ViewBag.RelatedProducts != null && ViewBag.RelatedProducts.Count > 0)
+        {
+            <div class="related-products-container">
+                <div class="related-products-wrapper">
+                    @foreach (var relatedProduct in ViewBag.RelatedProducts)
+                    {
+                        <div class="related-product-card">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="position-relative">
+                                    <a href="@Url.Action("ChitietSP", "Product", new { id = relatedProduct.Id })">
+                                        <img src="@relatedProduct.FullPicturePath" class="related-product-img" alt="@relatedProduct.ProductName" loading="lazy">
+                                    </a>
+                                    @if (relatedProduct.SoLuong <= 0)
+                                    {
+                                        <span class="badge bg-danger position-absolute top-0 end-0 m-2">Hết hàng</span>
+                                    }
+                                    else if (relatedProduct.SoLuong <= 50)
+                                    {
+                                        <span class="badge bg-warning position-absolute top-0 end-0 m-2">Sắp hết</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(relatedProduct.ProductSale))
+                                    {
+                                        <div class="position-absolute top-0 start-0 m-2">
+                                            <span class="badge bg-danger">-@relatedProduct.ProductSale%</span>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">
+                                        <a href="@Url.Action("ChitietSP", "Product", new { id = relatedProduct.Id })" class="text-decoration-none text-dark product-title">
+                                            @relatedProduct.ProductName
+                                        </a>
+                                    </h5>
+                                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                                        <div class="price-wrapper">
+                                            @if (relatedProduct.PriceOld != null && relatedProduct.PriceOld > relatedProduct.UnitPrice)
+                                            {
+                                                <span class="text-muted text-decoration-line-through me-2 small">
+                                                    @string.Format("{0:#,0}", relatedProduct.PriceOld)đ
+                                                </span>
+                                            }
+                                            <span class="fw-bold text-primary">@string.Format("{0:#,0}", relatedProduct.UnitPrice)đ</span>
+                                        </div>
+
+                                        @if (relatedProduct.SoLuong > 0)
+                                        {
+                                            <a href="@Url.Action("ThemGioHang", "Giohang", new { id = relatedProduct.Id, strURL = Request.Url.ToString() })" class="btn btn-sm btn-primary rounded-circle add-cart-btn">
+                                                <i class="fas fa-cart-plus"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>Không có sản phẩm tương tự
+            </div>
+        }
+    </div>
+
+    @section Scripts {
+        <script>
+            // Sử dụng IIFE để đảm bảo code không xung đột với các script khác
+            (function () {
+                // Đảm bảo DOM đã tải hoàn toàn trước khi thực thi script
+                document.addEventListener('DOMContentLoaded', function () {
+                    console.log('DOM đã tải xong, bắt đầu khởi tạo script');
+
+                    // === PHẦN XỬ LÝ SCROLL CHO SẢN PHẨM TƯƠNG TỰ ===
+                    initRelatedProductsScroll();
+
+                    // === PHẦN XỬ LÝ THÊM GIỎ HÀNG ===
+                    initAddToCartButton();
+
+                    // === PHẦN XỬ LÝ TĂNG GIẢM SỐ LƯỢNG ===
+                    initQuantityControls();
+
+                    // === CÁC TÍNH NĂNG KHÁC ===
+                    initReviewsFeatures();
+                    initOtherFeatures();
+                });
+
+                // Khởi tạo chức năng cuộn sản phẩm tương tự
+                function initRelatedProductsScroll() {
+                    const scrollLeftBtn = document.getElementById('scrollLeftBtn');
+                    const scrollRightBtn = document.getElementById('scrollRightBtn');
+                    const container = document.querySelector('.related-products-wrapper');
+
+                    // Kiểm tra các phần tử có tồn tại không
+                    if (!container) {
+                        console.error('Không tìm thấy container cho sản phẩm tương tự');
+                        return;
+                    }
+
+                    if (!scrollLeftBtn || !scrollRightBtn) {
+                        console.error('Không tìm thấy nút điều khiển scroll');
+                        return;
+                    }
+
+                    console.log('Tìm thấy các phần tử scroll, khởi tạo handler');
+
+                    // Tính toán khoảng cách scroll
+                    const scrollAmount = 240; // Có thể điều chỉnh
+
+                    // Xử lý sự kiện click cho nút trái
+                    scrollLeftBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        console.log('Click nút scroll trái');
+                        container.scrollLeft -= scrollAmount;
+                    });
+
+                    // Xử lý sự kiện click cho nút phải
+                    scrollRightBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        console.log('Click nút scroll phải');
+                        container.scrollLeft += scrollAmount;
+                    });
+
+                    // Để đảm bảo nút scroll được hiển thị đúng
+                    function updateScrollButtons() {
+                        const scrollPosition = container.scrollLeft;
+                        const maxScroll = container.scrollWidth - container.clientWidth;
+
+                        // Ẩn/hiện nút scroll trái
+                        if (scrollPosition <= 0) {
+                            scrollLeftBtn.classList.add('disabled');
+                            scrollLeftBtn.disabled = true;
+                        } else {
+                            scrollLeftBtn.classList.remove('disabled');
+                            scrollLeftBtn.disabled = false;
+                        }
+
+                        // Ẩn/hiện nút scroll phải
+                        if (scrollPosition >= maxScroll - 5) {
+                            scrollRightBtn.classList.add('disabled');
+                            scrollRightBtn.disabled = true;
+                        } else {
+                            scrollRightBtn.classList.remove('disabled');
+                            scrollRightBtn.disabled = false;
+                        }
+                    }
+
+                    // Khởi tạo trạng thái nút
+                    updateScrollButtons();
+
+                    // Lắng nghe sự kiện scroll
+                    container.addEventListener('scroll', updateScrollButtons);
+                }
+
+                // Khởi tạo chức năng thêm vào giỏ hàng
+                function initAddToCartButton() {
+                    const addToCartBtn = document.querySelector('.add-to-cart-btn');
+
+                    if (!addToCartBtn) {
+                        console.log('Không tìm thấy nút thêm vào giỏ hàng chính');
+                        return;
+                    }
+
+                    console.log('Tìm thấy nút thêm vào giỏ hàng, khởi tạo handler');
+
+                    addToCartBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+
+                        const originalHtml = this.innerHTML;
+                        const originalHref = this.getAttribute('href');
+                        const quantityInput = document.getElementById('quantity');
+
+                        if (!quantityInput) {
+                            window.location.href = originalHref;
+                            return;
+                        }
+
+                        const quantity = quantityInput.value;
+
+                        // Thay đổi hiển thị nút
+                        this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang thêm...';
+                        this.disabled = true;
+
+                        // Giả lập thêm sản phẩm vào giỏ hàng
+                        setTimeout(() => {
+                            this.innerHTML = '<i class="fas fa-check me-2"></i>Đã thêm';
+                            this.classList.remove('btn-primary');
+                            this.classList.add('btn-success');
+
+                            // Chuyển hướng sau khi hoàn thành
+                            setTimeout(() => {
+                                const separator = originalHref.includes('?') ? '&' : '?';
+                                window.location.href = originalHref + separator + 'quantity=' + quantity;
+                            }, 1000);
+                        }, 800);
+                    });
+
+                    // Khởi tạo các nút thêm vào giỏ hàng cho sản phẩm tương tự
+                    const relatedAddButtons = document.querySelectorAll('.related-product-card .add-cart-btn');
+
+                    relatedAddButtons.forEach(button => {
+                        button.addEventListener('click', function (e) {
+                            e.preventDefault();
+
+                            const originalHref = this.getAttribute('href');
+
+                            // Hiệu ứng animation
+                            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                            this.classList.add('btn-success');
+                            this.classList.remove('btn-primary');
+
+                            setTimeout(() => {
+                                this.innerHTML = '<i class="fas fa-check"></i>';
+
+                                setTimeout(() => {
+                                    window.location.href = originalHref;
+                                }, 700);
+                            }, 800);
+                        });
+                    });
+                }
+
+                // Khởi tạo chức năng tăng giảm số lượng
+                function initQuantityControls() {
+                    const incrementBtn = document.querySelector('button[onclick="incrementQuantity()"]');
+                    const decrementBtn = document.querySelector('button[onclick="decrementQuantity()"]');
+                    const quantityInput = document.getElementById('quantity');
+
+                    if (!incrementBtn || !decrementBtn || !quantityInput) {
+                        console.log('Không tìm thấy các phần tử điều khiển số lượng');
+                        return;
+                    }
+
+                    // Xóa các attribute onclick cũ
+                    incrementBtn.removeAttribute('onclick');
+                    decrementBtn.removeAttribute('onclick');
+
+                    // Thêm event listener mới
+                    incrementBtn.addEventListener('click', function () {
+                        const currentValue = parseInt(quantityInput.value);
+                        const maxValue = parseInt(quantityInput.getAttribute('max'));
+                        if (currentValue < maxValue) {
+                            quantityInput.value = currentValue + 1;
+                        }
+                    });
+
+                    decrementBtn.addEventListener('click', function () {
+                        const currentValue = parseInt(quantityInput.value);
+                        if (currentValue > 1) {
+                            quantityInput.value = currentValue - 1;
+                        }
+                    });
+
+                    // Xử lý validation cho input số lượng
+                    quantityInput.addEventListener('change', function () {
+                        const value = parseInt(this.value);
+                        const max = parseInt(this.getAttribute('max'));
+                        if (value < 1) this.value = 1;
+                        if (value > max) this.value = max;
+                    });
+                }
+
+                // Khởi tạo chức năng cho phần đánh giá
+                function initReviewsFeatures() {
+                    // Xử lý nút xem thêm đánh giá
+                    const loadMoreBtn = document.getElementById('loadMoreReviews');
+                    if (loadMoreBtn) {
+                        loadMoreBtn.addEventListener('click', function () {
+                            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
+                            this.disabled = true;
+
+                            // Tăng biến page
+                            window.page = window.page || 1;
+                            window.page++;
+
+                            // Lấy ID sản phẩm từ URL hoặc phần tử nào đó
+                            const productId = document.querySelector('input[name="id_sp"]')?.value;
+
+                            // Gửi AJAX request để lấy thêm đánh giá
+                            fetch(`/Product/LoadMoreReviews?productId=${productId}&page=${window.page}`)
+                                .then(response => response.text())
+                                .then(data => {
+                                    if (data.trim().length > 0) {
+                                        document.getElementById('reviewsList').insertAdjacentHTML('beforeend', data);
+                                        loadMoreBtn.innerHTML = 'Xem thêm đánh giá';
+                                        loadMoreBtn.disabled = false;
+                                    } else {
+                                        loadMoreBtn.remove();
+                                    }
+                                })
+                                .catch(error => {
+                                    loadMoreBtn.innerHTML = 'Xem thêm đánh giá';
+                                    loadMoreBtn.disabled = false;
+                                    alert('Có lỗi xảy ra khi tải thêm đánh giá');
+                                });
+                        });
+                    }
+
+                    // Tự động đóng các alert sau 5 giây
+                    const alerts = document.querySelectorAll('.alert');
+                    alerts.forEach(alert => {
+                        setTimeout(() => {
+                            if (alert && alert.parentNode) {
+                                alert.classList.add('fade');
+                                setTimeout(() => alert.remove(), 300);
+                            }
+                        }, 5000);
+                    });
+                }
+
+                // Khởi tạo các tính năng khác
+                function initOtherFeatures() {
+                    // Xử lý click vào rating summary để scroll đến phần đánh giá
+                    const ratingSummary = document.querySelector('.rating-summary');
+                    if (ratingSummary) {
+                        ratingSummary.addEventListener('click', function () {
+                            const reviewsSection = document.querySelector('.reviews-section');
+                            if (reviewsSection) {
+                                window.scrollTo({
+                                    top: reviewsSection.offsetTop - 100,
+                                    behavior: 'smooth'
+                                });
+                            }
+                        });
+                    }
+
+                    // Thêm hiệu ứng hover cho sản phẩm tương tự
+                    const relatedProductCards = document.querySelectorAll('.related-product-card');
+                    relatedProductCards.forEach(card => {
+                        card.addEventListener('mouseenter', function () {
+                            this.querySelector('.card')?.classList.add('shadow');
+                        });
+
+                        card.addEventListener('mouseleave', function () {
+                            this.querySelector('.card')?.classList.remove('shadow');
+                        });
+                    });
+                }
+            })();
+        </script>
+    }
+
+
+    @section Styles {
+        <style>
+            /* Improved Related Products Styles */
+            .related-products-section {
+                margin-top: 50px;
+                padding-top: 30px;
+                border-top: 1px solid #e9ecef;
+            }
+
+            .section-header {
+                position: relative;
+                margin-bottom: 20px;
+            }
+
+            .related-products-container {
+                position: relative;
+                overflow: hidden;
+                padding: 10px 0;
+            }
+
+            .related-products-wrapper {
+                display: flex;
+                overflow-x: auto;
+                scroll-behavior: smooth;
+                -ms-overflow-style: none; /* IE and Edge */
+                scrollbar-width: none; /* Firefox */
+                gap: 20px;
+                padding: 10px 0;
+            }
+
+                .related-products-wrapper::-webkit-scrollbar {
+                    display: none; /* Chrome, Safari, Opera */
+                }
+
+            .related-product-card {
+                flex: 0 0 auto;
+                width: 220px;
+                transition: transform 0.3s ease;
+            }
+
+                .related-product-card:hover {
+                    transform: translateY(-5px);
+                }
+
+            .related-product-img {
+                height: 180px;
+                object-fit: contain;
+                padding: 15px;
+                transition: all 0.3s ease;
+            }
+
+            .related-product-card:hover .related-product-img {
+                transform: scale(1.05);
+            }
+
+            .product-title {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                height: 48px;
+                font-size: 0.95rem;
+                margin-bottom: 10px;
+            }
+
+            .add-cart-btn {
+                width: 34px;
+                height: 34px;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+            }
+
+                .add-cart-btn:hover {
+                    transform: scale(1.1);
+                }
+
+            .scroll-controls {
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+
+                .scroll-controls:hover {
+                    background-color: #0d6efd;
+                    color: white;
+                }
+
+                .scroll-controls.disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                    pointer-events: none;
+                }
+
+            /* Cải thiện container sản phẩm liên quan */
+            .related-products-wrapper {
+                scroll-behavior: smooth;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 5px;
+            }
+
+            /* Sửa lại style cho ảnh sản phẩm chính */
+            .col-md-6 > .card > .position-relative > .card-img-top {
+                width: 100%;
+                height: auto;
+                min-height: 400px;
+                object-fit: contain;
+            }
+
+            .product-title {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                height: 48px;
+            }
+
+            .card-img-top {
+                height: 200px;
+                object-fit: contain;
+                padding: 10px;
+            }
+
+            .rating-input .fa-star {
+                transition: 0.2s all;
+            }
+
+                .rating-input .fa-star:hover,
+                .rating-input .fa-star.active {
+                    transform: scale(1.1);
+                }
+
+            .reviews-list .card {
+                transition: 0.3s all;
+            }
+
+                .reviews-list .card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+                }
+
+            .reviews-section {
+                margin-top: 50px;
+                padding-top: 30px;
+                border-top: 1px solid #e5e7eb;
+            }
+
+            .rating-input {
+                display: flex;
+                flex-direction: row-reverse;
+                justify-content: flex-end;
+            }
+
+                .rating-input .fa-star {
+                    color: #fbbf24;
+                    cursor: pointer;
+                    padding: 0 2px;
+                }
+
+                    .rating-input .fa-star:hover,
+                    .rating-input .fa-star:hover ~ .fa-star {
+                        color: #f59e0b;
+                    }
+
+            .review-card {
+                transition: all 0.3s ease;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+                .review-card:hover {
+                    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+                }
+
+            .review-header {
+                display: flex;
+                align-items: center;
+                padding: 15px;
+                background-color: #f9fafb;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .reviewer-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                margin-right: 12px;
+            }
+
+            .reviewer-info {
+                flex: 1;
+            }
+
+            .reviewer-name {
+                font-weight: 600;
+                color: #111827;
+                margin-bottom: 2px;
+            }
+
+            .review-date {
+                font-size: 0.875rem;
+                color: #6b7280;
+            }
+
+            .review-rating {
+                display: flex;
+                align-items: center;
+            }
+
+            .review-content {
+                padding: 15px;
+                color: #374151;
+                line-height: 1.5;
+            }
+
+            .review-footer {
+                padding: 10px 15px;
+                border-top: 1px solid #e5e7eb;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .review-helpful-btn {
+                border: none;
+                background: none;
+                color: #6b7280;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                padding: 5px 10px;
+                border-radius: 4px;
+                transition: all 0.2s ease;
+            }
+
+                .review-helpful-btn:hover {
+                    background-color: #f3f4f6;
+                    color: #374151;
+                }
+
+                .review-helpful-btn.active {
+                    color: #059669;
+                }
+
+            .rating-input {
+                display: flex;
+                flex-direction: row-reverse;
+                justify-content: flex-start;
+            }
+
+            .rating-star {
+                color: #ffc107;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+
+                .rating-star:hover,
+                .rating-star.active {
+                    transform: scale(1.2);
+                }
+
+                    .rating-star:hover ~ .rating-star,
+                    .rating-star.active ~ .rating-star {
+                        color: #ffc107;
+                    }
+
+            .review-card {
+                border: 1px solid rgba(0,0,0,.125);
+                border-radius: .25rem;
+                transition: all 0.3s ease;
+            }
+
+                .review-card:hover {
+                    transform: translateY(-2px);
+                }
+
+            .reviewer-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+
+            .rating-display .fa-star {
+                color: #ffc107;
+                margin-right: 2px;
+            }
+
+            .invalid-feedback {
+                display: none;
+                color: #dc3545;
+                font-size: 80%;
+                margin-top: .25rem;
+            }
+
+            textarea.is-invalid:focus {
+                border-color: #dc3545;
+                box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+            }
+
+            .reviews-section {
+                margin-top: 50px;
+                padding-top: 30px;
+                border-top: 1px solid #e9ecef;
+            }
+
+            /* Rating Summary Styles */
+            .rating-summary {
+                background: #f8f9fa;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 30px;
+            }
+
+            .average-rating {
+                font-size: 48px;
+                font-weight: bold;
+                color: #ffc107;
+                line-height: 1;
+            }
+
+            .rating-progress {
+                display: flex;
+                align-items: center;
+                margin: 5px 0;
+            }
+
+            .rating-label {
+                min-width: 60px;
+            }
+
+            .rating-bar {
+                flex-grow: 1;
+                height: 8px;
+                margin: 0 10px;
+                background-color: #e9ecef;
+                border-radius: 4px;
+                overflow: hidden;
+            }
+
+            .rating-fill {
+                height: 100%;
+                background-color: #ffc107;
+                border-radius: 4px;
+                transition: width 0.3s ease;
+            }
+
+            .rating-count {
+                min-width: 50px;
+                text-align: right;
+                color: #6c757d;
+            }
+
+            /* Review Form Styles */
+            .review-form {
+                background: #fff;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 30px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            .rating-input {
+                margin-bottom: 15px;
+            }
+
+            .rating-star {
+                font-size: 24px;
+                padding: 0 5px;
+            }
+
+            .review-content textarea {
+                resize: vertical;
+                min-height: 100px;
+            }
+
+            /* Review List Styles */
+            .reviews-list .review-card {
+                margin-bottom: 20px;
+                background: #fff;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+
+            .review-header {
+                padding: 15px;
+                border-bottom: 1px solid #e9ecef;
+            }
+
+            .reviewer-info .reviewer-name {
+                font-weight: 600;
+                color: #212529;
+            }
+
+            .review-date {
+                color: #6c757d;
+                font-size: 0.875rem;
+            }
+
+            .review-content {
+                padding: 15px;
+            }
+
+            .review-actions {
+                padding: 10px 15px;
+                background: #f8f9fa;
+                border-top: 1px solid #e9ecef;
+            }
+
+            /* Load More Button Styles */
+            #loadMoreReviews {
+                display: block;
+                width: 200px;
+                margin: 20px auto;
+                padding: 10px;
+                background: #fff;
+                border: 1px solid #dee2e6;
+                border-radius: 4px;
+                transition: all 0.3s ease;
+            }
+
+                #loadMoreReviews:hover {
+                    background: #f8f9fa;
+                    border-color: #c1c9d0;
+                }
+
+            /* Alert Styles */
+            .alert {
+                border-radius: 4px;
+                margin-bottom: 20px;
+                animation: fadeIn 0.3s ease;
+            }
+
+            .alert-dismissible .btn-close {
+                padding: 1.05rem 1rem;
+            }
+
+            @@keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* Responsive Styles */
+            @@media (max-width: 768px) {
+                .rating-input {
+                    justify-content: center;
+                }
+
+                .rating-star {
+                    font-size: 20px;
+                }
+
+                .review-header {
+                    flex-direction: column;
+                    text-align: center;
+                }
+
+                .reviewer-avatar {
+                    margin-bottom: 10px;
+                }
+
+                .rating-summary {
+                    padding: 15px;
+                }
+
+                .average-rating {
+                    font-size: 36px;
+                }
+            }
+
+            /* Animation for review cards */
+            .review-card {
+                animation: slideIn 0.3s ease;
+            }
+
+            @@keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* Hover effects */
+            .reviewer-avatar:hover {
+                transform: scale(1.1);
+                transition: transform 0.3s ease;
+            }
+
+            .review-card:hover .review-content {
+                background-color: #f8f9fa;
+            }
+
+            /* Empty state styles */
+            .reviews-empty {
+                text-align: center;
+                padding: 40px 20px;
+                color: #6c757d;
+            }
+
+                .reviews-empty i {
+                    font-size: 48px;
+                    margin-bottom: 15px;
+                    color: #dee2e6;
+                }
+
+            /* Review form focus states */
+            .form-control:focus {
+                border-color: #80bdff;
+                box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+            }
+
+            /* Custom scrollbar for review content */
+            .review-content::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .review-content::-webkit-scrollbar-track {
+                background: #f1f1f1;
+            }
+
+            .review-content::-webkit-scrollbar-thumb {
+                background: #888;
+                border-radius: 4px;
+            }
+
+                .review-content::-webkit-scrollbar-thumb:hover {
+                    background: #555;
+                }
+            /* Rating summary styles */
+            .rating-summary {
+                background: #f9fafb;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 30px;
+            }
+
+            .average-rating {
+                font-size: 48px;
+                font-weight: 700;
+                line-height: 1;
+                color: #111827;
+            }
+
+            .rating-distribution {
+                margin-top: 15px;
+            }
+
+            .rating-bar {
+                display: flex;
+                align-items: center;
+                margin-bottom: 5px;
+            }
+
+            .rating-label {
+                min-width: 60px;
+            }
+
+            .progress {
+                flex: 1;
+                height: 8px;
+                margin: 0 10px;
+                border-radius: 4px;
+                background-color: #e5e7eb;
+            }
+
+            .progress-bar {
+                background-color: #fbbf24;
+                border-radius: 4px;
+            }
+
+            .rating-count {
+                min-width: 50px;
+                text-align: right;
+                color: #6b7280;
+            }
+        </style>
+    }

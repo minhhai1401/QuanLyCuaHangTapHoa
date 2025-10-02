@@ -1,0 +1,1255 @@
+﻿@using QuanLyCuaHangTapHoa.Models;
+@model QuanLyCuaHangTapHoa.Models.Order
+
+@{
+    quantaphoaEntities _db = new quantaphoaEntities();
+    ViewBag.Title = "Chi tiết đơn hàng";
+    Layout = "~/Views/Shared/_layoutadmin.cshtml";
+    Order orders = _db.Orders.Find(Model.ID);
+    List<Order_Detail> orderDetails = _db.Order_Detail.Where(od => od.ID_Order == orders.ID).ToList();
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="~/Content/printThis.js"></script>
+}
+
+@using (Html.BeginForm("Edit", "Order", FormMethod.Post, new { enctype = "multipart/form-data", @class = "order-detail-form", onsubmit = "return validateForm();" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.ID)
+
+    <div class="order-detail-container ViewPrint">
+        <!-- Header Section -->
+        <div class="detail-header">
+            <div class="header-content">
+                <div class="order-title">
+                    <i class="fas fa-file-invoice"></i>
+                    <h1>Chi tiết đơn hàng #@Model.ID</h1>
+                </div>
+                <div class="order-date">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Ngày đặt: @(Model.NgayDat.HasValue ? Model.NgayDat.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa có ngày đặt")</span>
+                </div>
+            </div>
+            <div class="status-indicator @Model.Status.ToLower().Replace(" ", "-")">
+                <i class="@(Model.Status == "Hoàn thành" ? "fas fa-check-circle" :
+                          Model.Status == "Đang giao hàng" ? "fas fa-truck" :
+                          Model.Status == "Đã hủy" ? "fas fa-ban" : "fas fa-clock")"></i>
+                <span>@Model.Status</span>
+            </div>
+        </div>
+
+        <div class="detail-content">
+            <!-- Products Section -->
+            <div class="detail-section products-section">
+                <div class="section-header">
+                    <i class="fas fa-box-open"></i>
+                    <h2>Sản phẩm trong đơn hàng</h2>
+                </div>
+                <div class="products-grid">
+                    @foreach (var item in orderDetails)
+                    {
+                        var product = _db.Products.Find(item.ID_Product);
+                        if (product != null)
+                        {
+                            <div class="product-card">
+                                <div class="product-image">
+                                    <img src="~/Resources/Pictures/Products/@product.Picture" alt="@product.ProductName">
+                                    @if (item.SoLuong.HasValue && item.SoLuong.Value > 0)
+                                    {
+                                        <div class="quantity-overlay">
+                                            <span class="quantity-text">x@(item.SoLuong.Value)</span>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="product-info">
+                                    <h3>@product.ProductName</h3>
+                                    <div class="product-price">
+                                        <i class="fas fa-tag"></i>
+                                        <span>@string.Format("{0:#,0}", item.Price / item.SoLuong) đ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Order Information Section -->
+            <div class="detail-section info-section">
+                <div class="section-header">
+                    <i class="fas fa-user"></i>
+                    <h2>Thông tin khách hàng</h2>
+                </div>
+                <div class="info-grid">
+                    <div class="info-card customer-name">
+                        <div class="info-icon">
+                            <i class="fas fa-id-card"></i>
+                        </div>
+                        <div class="info-content">
+                            <label>Họ và tên</label>
+                            @if (Model.KhachHang != null)
+                            {
+                                <p>@Model.KhachHang.HoTen</p>
+                            }
+                            else
+                            {
+                                <p>Chưa có thông tin</p>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="info-card customer-phone">
+                        <div class="info-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="info-content">
+                            <label>Số điện thoại</label>
+                            @if (Model.KhachHang != null && !string.IsNullOrEmpty(Model.KhachHang.Sdt))
+                            {
+                                <p>@Model.KhachHang.Sdt</p>
+                            }
+                            else
+                            {
+                                <p>Chưa có thông tin</p>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="info-card customer-email">
+                        <div class="info-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="info-content">
+                            <label>Email</label>
+                            @if (Model.KhachHang != null && !string.IsNullOrEmpty(Model.KhachHang.Email))
+                            {
+                                <p>@Model.KhachHang.Email</p>
+                            }
+                            else
+                            {
+                                <p>Chưa có thông tin</p>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="info-card customer-address">
+                        <div class="info-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <label>Địa chỉ</label>
+                            @if (Model.KhachHang != null && !string.IsNullOrEmpty(Model.KhachHang.Address))
+                            {
+                                <p>@Model.KhachHang.Address</p>
+                            }
+                            else
+                            {
+                                <p>Chưa có thông tin</p>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="info-card customer-points">
+                        <div class="info-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="info-content">
+                            <label>Điểm tích lũy</label>
+                            @if (Model.KhachHang != null)
+                            {
+                                <p>@Model.KhachHang.TichLuy điểm</p>
+                            }
+                            else
+                            {
+                                <p>0 điểm</p>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="info-card payment">
+                        <div class="info-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div class="info-content">
+                            <label>Phương thức thanh toán</label>
+                            <p>@(orders.Payment.HasValue && orders.Payment.Value ? "Thanh toán qua MOMO" : "Thanh toán tiền mặt")</p>
+                        </div>
+                    </div>
+
+                    <div class="info-card total">
+                        <div class="info-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="info-content">
+                            <label>Tổng thanh toán</label>
+                            <p class="price">@string.Format("{0:#,0}", orders.ThanhTien) đ</p>
+                        </div>
+                    </div>
+
+                    @{
+                        // Kiểm tra trạng thái có thể cập nhật không
+                        bool canEditStatus = Model.Status != "Hoàn thành" && Model.Status != "Đã hủy";
+                    }
+
+                    <div class="info-card status">
+                        <div class="info-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="info-content">
+                            <label>Trạng thái đơn hàng</label>
+                            @if (canEditStatus)
+                            {
+                                <select name="Status" class="status-select" id="orderStatus">
+                                    @if (Model.Status == "Chưa giao hàng" || Model.Status == "Đang giao hàng")
+                                    {
+                                        <option value="Chưa giao hàng" @(Model.Status == "Chưa giao hàng" ? "selected" : "")>Chưa giao hàng</option>
+                                    }
+
+                                    @if (Model.Status == "Chưa giao hàng" || Model.Status == "Đang giao hàng")
+                                    {
+                                        <option value="Đang giao hàng" @(Model.Status == "Đang giao hàng" ? "selected" : "")>Đang giao hàng</option>
+                                    }
+
+                                    @if (Model.Status == "Đang giao hàng")
+                                    {
+                                        <option value="Hoàn thành">Hoàn thành</option>
+                                    }
+
+                                    @if (Model.Status == "Chưa giao hàng" || Model.Status == "Đang giao hàng")
+                                    {
+                                        <option value="Đã hủy">Đã hủy</option>
+                                    }
+                                </select>
+                            }
+                            else
+                            {
+                                <p>@Model.Status</p>
+                                <input type="hidden" name="Status" value="@Model.Status" />
+                            }
+                        </div>
+                    </div>
+                    <div class="info-card delivery-date">
+                        <div class="info-icon">
+                            <i class="fas fa-truck-loading"></i>
+                        </div>
+                        <div class="info-content">
+                            <label>Ngày giao hàng</label>
+                            @if (Model.Status == "Đang giao hàng" || Model.Status == "Hoàn thành")
+                            {
+                                <input type="datetime-local"
+                                       name="NgayGiao"
+                                       id="deliveryDate"
+                                       class="datetime-input"
+                                       value="@(Model.NgayGiao.HasValue ? Model.NgayGiao.Value.ToString("yyyy-MM-ddTHH:mm") : DateTime.Now.ToString("yyyy-MM-ddTHH:mm"))"
+                                       min="@(Model.NgayDat.HasValue ? Model.NgayDat.Value.ToString("yyyy-MM-ddTHH:mm") : DateTime.Now.ToString("yyyy-MM-ddTHH:mm"))"
+                                       @(canEditStatus ? "" : "disabled") />
+                            }
+                            else if (Model.Status == "Chưa giao hàng")
+                            {
+                                <p>Chưa xác định</p>
+                                <input type="hidden" name="NgayGiao" value="" />
+                            }
+                            else
+                            {
+                                <p>Không khả dụng</p>
+                                <input type="hidden" name="NgayGiao" value="" />
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            @if (canEditStatus)
+            {
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    <span>Cập nhật trạng thái</span>
+                </button>
+            }
+            @if (Model.Status == "Hoàn thành")
+            {
+                <button type="button" id="Print" class="btn btn-print">
+                    <i class="fas fa-print"></i>
+                    <span>In đơn hàng</span>
+                </button>
+            }
+            <a href="@Url.Action("Index", "Order")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                <span>Quay lại</span>
+            </a>
+
+            @if (Model.Status == "Hoàn thành" || Model.Status == "Đã hủy")
+            {
+                <button type="button" class="btn btn-danger" onclick="confirmDelete(@Model.ID)">
+                    <i class="fas fa-trash"></i>
+                    <span>Xóa Đơn Hàng</span>
+                </button>
+            }
+        </div>
+    </div>
+}
+
+<script>
+    function validateForm() {
+        var status = document.getElementById('orderStatus');
+        var dateInput = document.getElementById('deliveryDate');
+
+        if (status && status.value === "Hoàn thành" && dateInput) {
+            var ngayGiao = new Date(dateInput.value);
+            var ngayDat = new Date('@(Model.NgayDat.HasValue ? Model.NgayDat.Value.ToString("yyyy-MM-ddTHH:mm") : DateTime.Now.ToString("yyyy-MM-ddTHH:mm"))');
+
+            if (ngayGiao < ngayDat) {
+                alert('Ngày giao không thể trước ngày đặt hàng!');
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function confirmDelete(orderId) {
+        if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) {
+            $.ajax({
+                url: '@Url.Action("Delete", "Order")',
+                type: 'POST',
+                data: { id: orderId },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        window.location.href = '@Url.Action("Index", "Order")';
+                    } else {
+                        alert(response.message || 'Có lỗi xảy ra khi xóa đơn hàng.');
+                    }
+                },
+                error: function() {
+                    alert('Có lỗi xảy ra khi xóa đơn hàng.');
+                }
+            });
+        }
+    }
+
+    $(document).ready(function () {
+        // Theo dõi sự thay đổi trạng thái đơn hàng để hiển thị/ẩn ngày giao
+        $('#orderStatus').on('change', function () {
+            var selectedStatus = $(this).val();
+            var deliveryDateContainer = $('.delivery-date');
+
+            if (selectedStatus === "Chưa giao hàng") {
+                deliveryDateContainer.find('input').hide();
+                deliveryDateContainer.find('.info-content label').after('<p class="temp-msg">Chưa xác định</p>');
+            } else if (selectedStatus === "Đã hủy") {
+                deliveryDateContainer.find('input').hide();
+                deliveryDateContainer.find('.info-content label').after('<p class="temp-msg">Không khả dụng</p>');
+            } else {
+                deliveryDateContainer.find('.temp-msg').remove();
+                deliveryDateContainer.find('input').show();
+            }
+        });
+
+
+        // Xử lý in đơn hàng
+        $('#Print').on("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            console.log("Print button clicked");
+
+            $('.ViewPrint').printThis({
+                debug: false,
+                importCSS: true,
+                importStyle: true,
+                printContainer: true,
+                loadCSS: "",
+                pageTitle: "Chi tiết đơn hàng #" + @Model.ID,
+                removeInline: false,
+                printDelay: 333,
+                header: null,
+                footer: null,
+                base: false,
+                formValues: true,
+                canvas: false,
+                removeScripts: false,
+                copyTagClasses: false
+            });
+
+            return false;
+        });
+    });
+</script>
+
+
+<style>
+    .order-detail-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .detail-header {
+        background: linear-gradient(135deg, #ffd700 0%, #ffbb00 100%);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 10px 25px -5px rgba(255, 215, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    @@media print {
+    /* Thiết lập cơ bản */
+    body {
+        background: white !important;
+        font-family: 'Segoe UI', system-ui, sans-serif !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Ẩn các phần không cần thiết khi in */
+    .action-buttons,
+    .btn,
+    .datetime-input,
+    .status-select,
+    .no-print {
+        display: none !important;
+    }
+
+    /* Container chính */
+    .order-detail-container {
+        width: 100% !important;
+        max-width: none !important;
+        padding: 10px !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+    }
+
+    /* Header đơn hàng */
+    .detail-header {
+        background: none !important;
+        border-bottom: 2px solid #ccc !important;
+        padding: 10px 0 !important;
+        margin-bottom: 15px !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+
+    .detail-header::before {
+        display: none !important;
+    }
+
+    .order-title h1 {
+        font-size: 16pt !important;
+        color: black !important;
+    }
+
+    .order-date {
+        color: #333 !important;
+    }
+
+    .status-indicator {
+        padding: 5px 10px !important;
+        border: 1px solid #ccc !important;
+    }
+
+    /* Nội dung chính */
+    .detail-content {
+        display: block !important;
+    }
+
+    /* Section chung */
+    .detail-section {
+        width: 100% !important;
+        padding: 15px 0 !important;
+        margin-bottom: 15px !important;
+        border-bottom: 1px solid #eee !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: white !important;
+    }
+
+    .section-header {
+        margin-bottom: 10px !important;
+    }
+
+    .section-header h2 {
+        font-size: 14pt !important;
+        color: black !important;
+    }
+
+    /* Phần sản phẩm */
+    .products-grid {
+        display: table !important;
+        width: 100% !important;
+    }
+
+    .product-card {
+        display: flex !important;
+        width: 100% !important;
+        margin-bottom: 10px !important;
+        border: 1px solid #eee !important;
+        box-shadow: none !important;
+    }
+
+    .product-image {
+        width: 70px !important;
+        height: 70px !important;
+        padding-top: 0 !important;
+        position: relative !important;
+    }
+
+    .product-image img {
+        position: relative !important;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;
+    }
+
+    /* Phần thông tin khách hàng */
+    .info-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    .info-card {
+        background: white !important;
+        padding: 10px !important;
+        border: 1px solid #eee !important;
+        box-shadow: none !important;
+    }
+
+    .info-icon {
+        background: #f8f8f8 !important;
+        color: #333 !important;
+    }
+
+    /* Xử lý ngắt trang */
+    .page-break-avoid {
+        page-break-inside: avoid !important;
+    }
+
+    h1, h2, h3 {
+        page-break-after: avoid !important;
+    }
+}
+
+    .detail-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+        animation: rotate 20s linear infinite;
+    }
+
+    @@keyframes rotate {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .datetime-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #fbbf24;
+        border-radius: 0.5rem;
+        background: white;
+        color: #4b5563;
+        font-weight: 500;
+        outline: none;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+        .datetime-input:focus {
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        .datetime-input:hover {
+            border-color: #f59e0b;
+        }
+
+        /* Tùy chỉnh hiển thị cho Safari */
+        .datetime-input::-webkit-calendar-picker-indicator {
+            background: transparent;
+            bottom: 0;
+            color: transparent;
+            cursor: pointer;
+            height: auto;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: auto;
+        }
+
+    /* Responsive cho datetime input */
+    @@media (max-width: 768px) {
+        .datetime-input {
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+    }
+
+    /* Print styles cho datetime input */
+    @@media print {
+        .datetime-input {
+            border: none !important;
+            padding: 0 !important;
+            background: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+        }
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .btn-print {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+        box-shadow: 0 4px 15px -3px rgba(59, 130, 246, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .btn-print:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px -3px rgba(59, 130, 246, 0.4);
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        }
+
+        /* Thêm hiệu ứng ripple khi hover */
+        .btn-print::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .btn-print:hover::after {
+            transform: translateX(100%);
+        }
+
+        /* Thêm hiệu ứng focus */
+        .btn-print:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Hiệu ứng khi click */
+        .btn-print:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 10px -3px rgba(59, 130, 246, 0.4);
+        }
+
+    .order-title {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+        .order-title h1 {
+            font-size: 2rem;
+            color: #744210;
+            margin: 0;
+        }
+
+        .order-title i {
+            font-size: 2rem;
+            color: #744210;
+        }
+
+    .order-date {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #92400e;
+    }
+
+    .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem 2rem;
+        border-radius: 1rem;
+        font-weight: 600;
+        position: relative;
+        z-index: 1;
+    }
+
+        .status-indicator.chưa-giao-hàng {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .status-indicator.đang-giao-hàng {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-indicator.hoàn-thành {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .status-indicator.đã-hủy {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+    .detail-content {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .detail-section {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        color: #92400e;
+    }
+
+        .section-header i {
+            font-size: 1.5rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+    .product-image {
+        position: relative;
+        padding-top: 75%;
+        background: white;
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+
+        .product-image img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Thay đổi cover thành contain để giữ tỷ lệ ảnh */
+            padding: 0.5rem; /* Thêm padding để ảnh không sát viền */
+        }
+
+    .quantity-overlay {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .quantity-text {
+        color: white;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    /* Hiệu ứng hover cho product card */
+    .product-card {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid #f3f4f6;
+    }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border-color: #fbbf24;
+        }
+
+    .product-info {
+        padding: 1rem;
+        background: white;
+    }
+
+        .product-info h3 {
+            color: #1f2937;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+    .product-price {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #f59e0b;
+        font-weight: 600;
+    }
+
+        .product-price i {
+            font-size: 0.875rem;
+        }
+
+    .quantity-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+    }
+
+    .product-info {
+        padding: 1.5rem;
+    }
+
+        .product-info h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            color: #4b5563;
+        }
+
+    .product-price {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #92400e;
+        font-weight: 600;
+    }
+
+    .info-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .info-card {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        background: #fffbeb;
+        border-radius: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+        .info-card:hover {
+            transform: translateX(5px);
+        }
+
+    .info-icon {
+        width: 3rem;
+        height: 3rem;
+        background: #fbbf24;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #92400e;
+        font-size: 1.5rem;
+    }
+
+    .info-content {
+        flex: 1;
+    }
+
+        .info-content label {
+            display: block;
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-content p {
+            margin: 0;
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .info-content small {
+            color: #6b7280;
+        }
+
+        .info-content .price {
+            color: #92400e;
+            font-size: 1.25rem;
+        }
+
+    .status-select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #fbbf24;
+        border-radius: 0.5rem;
+        background: white;
+        color: #4b5563;
+        font-weight: 500;
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+
+        .status-select:focus {
+            border-color: #f59e0b;
+        }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 2rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        text-decoration: none;
+    }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .btn:hover::before {
+            width: 300%;
+            height: 300%;
+        }
+
+        .btn i {
+            font-size: 1.2rem;
+        }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        box-shadow: 0 4px 15px -3px rgba(245, 158, 11, 0.3);
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px -3px rgba(245, 158, 11, 0.4);
+        }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+        color: white;
+        box-shadow: 0 4px 15px -3px rgba(156, 163, 175, 0.3);
+    }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px -3px rgba(156, 163, 175, 0.4);
+        }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        box-shadow: 0 4px 15px -3px rgba(239, 68, 68, 0.3);
+    }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px -3px rgba(239, 68, 68, 0.4);
+        }
+
+    /* Responsive Design */
+    @@media (max-width: 1200px) {
+        .detail-content {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .order-detail-container {
+            padding: 1rem;
+        }
+
+        .detail-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .status-indicator {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* Animation Keyframes */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Apply animations */
+    .detail-section {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    .products-section {
+        animation-delay: 0.2s;
+    }
+
+    .info-section {
+        animation-delay: 0.4s;
+    }
+
+    /* Loading state styles */
+    .btn.loading {
+        position: relative;
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin: -10px 0 0 -10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s infinite linear;
+        }
+
+    @@keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Hover effects for cards */
+    .product-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, transparent 0%, rgba(255, 255, 255, 0.1) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .product-card:hover::after {
+        opacity: 1;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f3f4f6;
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #fbbf24;
+        border-radius: 4px;
+    }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #f59e0b;
+        }
+
+    @@media print {
+        .order-detail-container {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .action-buttons {
+            display: none !important;
+        }
+
+        .detail-header {
+            background: none !important;
+            color: #1f2937 !important;
+            padding: 1rem 0 !important;
+            border-bottom: 2px solid #f59e0b !important;
+        }
+
+        .product-card {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            border: 1px solid #e5e7eb !important;
+            margin-bottom: 1rem !important;
+        }
+
+        .detail-section {
+            box-shadow: none !important;
+            border: 1px solid #e5e7eb !important;
+            margin-bottom: 1rem !important;
+        }
+
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .detail-content {
+            display: block !important; /* Chuyển từ grid sang block */
+            width: 100% !important;
+        }
+        /* Điều chỉnh width cho sections */
+        .detail-section {
+            width: 100% !important;
+            margin-bottom: 20px !important;
+            page-break-inside: avoid !important;
+        }
+        /* Điều chỉnh product grid */
+        .products-grid {
+            display: block !important; /* Chuyển từ grid sang block */
+        }
+        /* Format product card khi in */
+        .product-card {
+            display: flex !important;
+            width: 100% !important;
+            margin-bottom: 15px !important;
+            break-inside: avoid !important;
+        }
+        /* Điều chỉnh kích thước ảnh sản phẩm */
+        .product-image {
+            width: 100px !important;
+            height: 100px !important;
+            padding-top: 0 !important;
+            position: relative !important;
+        }
+
+            .product-image img {
+                position: relative !important;
+                width: 100% !important;
+                height: 100% !important;
+            }
+        /* Ẩn các hiệu ứng không cần thiết khi in */
+        .detail-header::before,
+        .btn::before,
+        .product-card::after,
+        .quantity-overlay {
+            display: none !important;
+        }
+        /* Đảm bảo text hiện thị rõ ràng */
+        body {
+            color: black !important;
+            background: white !important;
+        }
+        /* Đảm bảo màu sắc được in */
+        .status-indicator,
+        .info-card,
+        .product-card,
+        .detail-header {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+        }
+        /* Đặt lại margin và padding cho container */
+        .order-detail-container {
+            margin: 0 !important;
+            padding: 10px !important;
+            max-width: none !important;
+        }
+        /* Format lại thông tin sản phẩm */
+        .product-info {
+            padding: 0.5rem !important;
+            flex: 1 !important;
+        }
+        /* Tối ưu hiển thị info grid */
+        .info-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }
+        /* Ẩn các phần không cần thiết khi in */
+        .status-select,
+        .action-buttons {
+            display: none !important;
+        }
+        /* Đảm bảo không cắt trang giữa các phần quan trọng */
+        h1, h2, h3 {
+            page-break-after: avoid !important;
+        }
+
+        .detail-header,
+        .info-card {
+            page-break-inside: avoid !important;
+        }
+    }
+</style>

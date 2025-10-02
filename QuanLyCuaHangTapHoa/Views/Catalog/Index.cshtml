@@ -1,0 +1,299 @@
+﻿@model QuanLyCuaHangTapHoa.Models.Catalog
+
+@{
+    ViewBag.Title = "Danh mục";
+    Layout = "~/Views/Shared/_layoutadmin.cshtml";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quản lý Danh mục</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-header">
+            <h1 class="page-title">
+                <i class="fas fa-boxes"></i>
+                Quản lý Danh mục Sản phẩm
+            </h1>
+            <div class="stats">
+                <div class="stat-item">
+                    <div>Tổng số danh mục</div>
+                    <div style="font-size: 1.5rem; font-weight: bold;">@ViewBag.catalogs.Count</div>
+                </div>
+                <div class="stat-item">
+                    <div>Cập nhật lần cuối</div>
+                    <div style="font-size: 1.5rem; font-weight: bold;">@DateTime.Now.ToString("dd/MM/yyyy")</div>
+                </div>
+            </div>
+        </div>
+
+        <a href="@Url.Action("Create", "Catalog")" class="create-button">
+            <i class="fas fa-plus-circle"></i>
+            Tạo mới danh mục
+        </a>
+
+        <div class="catalog-table">
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Mã Danh Mục</th>
+                        <th>Nhãn Hiệu</th>
+                        <th>Xuất Xứ</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.catalogs != null && ViewBag.catalogs.Count > 0)
+                    {
+                        foreach (var item in ViewBag.catalogs)
+                        {
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 600; color: #1e40af;">
+                                        @item.CatalogCode
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 500;">@item.CatalogName</div>
+                                </td>
+                                <td>
+                                    <span class="status-badge" style="background: #f0f9ff; color: #0369a1;">
+                                        @item.ProductOrigin
+                                    </span>
+                                </td>
+                                <td class="action-links">
+                                    <a href="@Url.Action("Edit", "Catalog", new { id = item.ID })" class="action-button edit-button">
+                                        <i class="fas fa-edit"></i>
+                                        Sửa
+                                    </a>
+                                    <a href="@Url.Action("Delete", "Catalog", new { id = item.ID })" class="action-button delete-button">
+                                        <i class="fas fa-trash-alt"></i>
+                                        Xóa
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="empty-state">
+                                <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                                <p>Chưa có danh mục nào. Hãy tạo danh mục mới!</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
+
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    body {
+        background: linear-gradient(135deg, #f6f8ff 0%, #f1f5ff 100%);
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.25);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: rotate 20s linear infinite;
+        }
+
+    @@keyframes rotate {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stats {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-item {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .create-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #2563eb;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1), 0 2px 4px -1px rgba(37, 99, 235, 0.06);
+    }
+
+        .create-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2);
+        }
+
+        .create-button i {
+            font-size: 1.2rem;
+        }
+
+    .catalog-table {
+        width: 100%;
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+        .catalog-table th {
+            background: #f8fafc;
+            padding: 1.25rem 1rem;
+            text-align: left;
+            color: #1e293b;
+            font-weight: 600;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .catalog-table td {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            color: #475569;
+        }
+
+        .catalog-table tr:hover td {
+            background: #f8fafc;
+        }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .action-links {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .action-button {
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .edit-button {
+        background: #e0e7ff;
+        color: #4f46e5;
+    }
+
+        .edit-button:hover {
+            background: #c7d2fe;
+        }
+
+    .delete-button {
+        background: #fee2e2;
+        color: #ef4444;
+    }
+
+        .delete-button:hover {
+            background: #fecaca;
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #64748b;
+    }
+
+    /* Animation cho các hàng trong bảng */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .catalog-table tbody tr {
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+
+        .catalog-table tbody tr:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .catalog-table tbody tr:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .catalog-table tbody tr:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+    /* và tiếp tục cho các hàng khác */
+
+</style>

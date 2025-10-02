@@ -1,0 +1,640 @@
+﻿@using QuanLyCuaHangTapHoa.Models;
+@using PagedList.Mvc;
+@using QuanLyCuaHangTapHoa.Utils;
+@model PagedList.PagedList<QuanLyCuaHangTapHoa.Models.Product>
+
+@{
+    quantaphoaEntities _db = new quantaphoaEntities();
+    var dscata = _db.Catalogs.ToList();
+    ViewBag.Title = "Danh sách sản phẩm";
+    Layout = "~/Views/Shared/_layoutadmin.cshtml";
+    var currentSearch = ViewBag.searchStr;
+    var currentSort = ViewBag.Sort;
+    var totalPage = ViewBag.totalPage;
+    var dsProduct = ViewBag.products;
+    NhanVien nvSession = (NhanVien)Session["NV"];
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quản lý Sản Phẩm</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-header">
+            <h1 class="page-title">
+                <i class="fas fa-box"></i>
+                Quản lý Sản Phẩm
+            </h1>
+            <div class="stats">
+                <div class="stat-item">
+                    <div>Tổng số sản phẩm</div>
+                    <div style="font-size: 1.5rem; font-weight: bold;">@Model.Count</div>
+                </div>
+                <div class="stat-item">
+                    <div>Cập nhật lần cuối</div>
+                    <div style="font-size: 1.5rem; font-weight: bold;">@DateTime.Now.ToString("dd/MM/yyyy")</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            @if (nvSession.MaChucVu == 2)
+            {
+                <a href="@Url.Action("Index","Catalog")" class="action-btn catalog-btn">
+                    <i class="fas fa-folder-plus"></i>
+                    Danh sách danh mục
+                </a>
+                <a href="@Url.Action("Create","Product")" class="action-btn create-btn">
+                    <i class="fas fa-plus"></i>
+                    Tạo mới sản phẩm
+                </a>
+            }
+            <a href="@Url.Action("Indexadminsp", "Product", new { sort = "pre-sold", searchString = ViewBag.searchStr, category = ViewBag.category })"
+               class="action-btn warning-btn">
+                <i class="fas fa-exclamation-triangle"></i>
+                Sắp hết hàng
+            </a>
+            <a href="@Url.Action("Indexadminsp", "Product", new { sort = "sold", searchString = ViewBag.searchStr, category = ViewBag.category })"
+               class="action-btn danger-btn">
+                <i class="fas fa-times-circle"></i>
+                Hết hàng
+            </a>
+            <a href="@Url.Action("Indexadminsp", "Product", new { sort = "available", searchString = ViewBag.searchStr, category = ViewBag.category })"
+               class="action-btn success-btn">
+                <i class="fas fa-check-circle"></i>
+                Còn hàng
+            </a>
+            <a href="@Url.Action("Indexadminsp", "Product", new { searchString = ViewBag.searchStr, category = ViewBag.category })"
+               class="action-btn default-btn">
+                <i class="fas fa-undo"></i>
+                Mặc định
+            </a>
+        </div>
+
+        <div class="search-pagination">
+            <div class="search-box">
+                @using (Html.BeginForm("Indexadminsp", "Product", FormMethod.Get))
+                {
+                    <input type="text" name="searchString" placeholder="Tìm kiếm sản phẩm..." value="@ViewBag.searchStr" />
+                }
+            </div>
+        </div>
+
+        <div class="product-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã SP</th>
+                        <th>Tên Sản Phẩm</th>
+                        <th>Ảnh Sản Phẩm</th>
+                        <th>Số lượng</th>
+                        <th>Tình trạng</th>
+                        <th>Giá tiền</th>
+                        <th>Nhãn hiệu</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.ProductCode</td>
+                            <td>
+                                <div class="product-name">@item.ProductName</div>
+                            </td>
+                            <td>
+                                <img src="~/Resources/Pictures/Products/@item.Picture" class="product-image" alt="@item.ProductName" />
+                            </td>
+                            <td>@(item.SoLuong >= 0 ? item.SoLuong : 0)</td>
+                            <td>
+                                @if (item.SoLuong > 50)
+                                {
+                                    <span class="status-badge success">Còn hàng</span>
+                                }
+                                else if (item.SoLuong > 0)
+                                {
+                                    <span class="status-badge warning">Sắp hết hàng</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge danger">Hết hàng</span>
+                                }
+                            </td>
+                            <td>@string.Format("{0:#,0}", item.UnitPrice) đ</td>
+                            <td>@item.Catalog.CatalogName</td>
+                            <td>
+                                <div class="action-links">
+                                    @if (nvSession.MaChucVu == 2)
+                                    {
+                                        <button class="action-button delete-button" title="Xóa"
+                                                onclick="location.href='@Url.Action("Delete", "Product",new { id = item.Id })'">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                        <button class="action-button edit-button" title="Sửa"
+                                                onclick="location.href='@Url.Action("Edit", "Product",new { id = item.Id })'">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="action-button home-button" title="Xem chi tiết"
+                                                onclick="location.href='@Url.Action("Detail", "Product",new { id = item.Id })'">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (totalPage > 1)
+        {
+            <div class="pagination">
+                @Html.PagedListPager(Model, page => Url.Action("Indexadminsp",
+                    new { searchString = currentSearch, page = page }),
+                    new PagedListRenderOptions()
+                    {
+                        LiElementClasses = new[] { "page-item" },
+                        UlElementClasses = new[] { "pagination-list" }
+                    })
+            </div>
+        }
+    </div>
+</body>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    body {
+        background: linear-gradient(135deg, #f6fff8 0%, #f1fff5 100%);
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.25);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: rotate 20s linear infinite;
+        }
+
+    @@keyframes rotate {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stats {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-item {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+    }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        font-weight: 500;
+        color: white;
+        transition: all 0.3s;
+    }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+    .catalog-btn {
+        background: #3b82f6;
+    }
+
+    .create-btn {
+        background: #22c55e;
+    }
+
+    .warning-btn {
+        background: #f59e0b;
+    }
+
+    .danger-btn {
+        background: #ef4444;
+    }
+
+    .success-btn {
+        background: #22c55e;
+    }
+
+    .default-btn {
+        background: #6b7280;
+    }
+
+    .search-pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .pagination-info {
+        font-size: 1rem;
+        color: #4b5563;
+    }
+
+    .search-box input {
+        width: 300px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        outline: none;
+        transition: all 0.3s;
+    }
+
+        .search-box input:focus {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+
+    .product-table {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+        .product-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .product-table th {
+            background: #f8fafc;
+            padding: 1.25rem 1rem;
+            text-align: left;
+            color: #1e293b;
+            font-weight: 600;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .product-table td {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            color: #475569;
+            vertical-align: middle;
+        }
+
+        .product-table tr:hover td {
+            background: #f8fafc;
+        }
+
+    .product-image {
+        display: block;
+        margin: auto;
+        width: 155px;
+        height: 125px;
+        object-fit: cover;
+        border-radius: 0.5rem;
+    }
+
+    .product-name {
+        font-weight: 500;
+        color: #1e293b;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+        .status-badge.success {
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+
+        .status-badge.warning {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-badge.danger {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+    .action-links {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-button {
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: white;
+    }
+
+        .action-button:hover {
+            transform: scale(1.1);
+        }
+
+    .delete-button {
+        background: #ef4444;
+    }
+
+    .edit-button {
+        background: #22c55e;
+    }
+
+    .cart-button {
+        background: #3b82f6;
+    }
+
+    .home-button {
+        background: #6b7280;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .pagination-list {
+        display: flex;
+        gap: 0.5rem;
+        list-style: none;
+    }
+
+    .page-item {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: white;
+        border-radius: 0.375rem;
+        color: #4b5563;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+        .page-item:hover {
+            background: #22c55e;
+            color: white;
+        }
+
+        .page-item.active {
+            background: #22c55e;
+            color: white;
+        }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Animation classes */
+    .fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 1200px) {
+        .container {
+            padding: 1rem;
+        }
+
+        .action-buttons {
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .search-box input {
+            width: 250px;
+        }
+    }
+
+    @@media (max-width: 992px) {
+        .product-table {
+            overflow-x: auto;
+        }
+
+        .stats {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .dashboard-header {
+            padding: 1.5rem;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .search-pagination {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .search-box input {
+            width: 100%;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .action-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* Additional Enhancement Styles */
+    .product-table tr {
+        transition: all 0.2s ease;
+    }
+
+    .product-image {
+        transition: transform 0.3s ease;
+    }
+
+        .product-image:hover {
+            transform: scale(1.1);
+        }
+
+    .action-button i {
+        transition: transform 0.2s ease;
+    }
+
+    .action-button:hover i {
+        transform: scale(1.2);
+    }
+
+    /* Improved Table Styles */
+    .product-table th:first-child,
+    .product-table td:first-child {
+        padding-left: 1.5rem;
+    }
+
+    .product-table th:last-child,
+    .product-table td:last-child {
+        padding-right: 1.5rem;
+    }
+
+    .product-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Enhanced Status Badge Styles */
+    .status-badge {
+        position: relative;
+        padding: 0.375rem 1rem;
+        font-weight: 600;
+        letter-spacing: 0.025em;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+        .status-badge::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+
+        .status-badge.success::before {
+            background-color: #16a34a;
+        }
+
+        .status-badge.warning::before {
+            background-color: #d97706;
+        }
+
+        .status-badge.danger::before {
+            background-color: #dc2626;
+        }
+
+    /* Improved Search Box */
+    .search-box {
+        position: relative;
+    }
+
+        .search-box input {
+            padding-left: 2.5rem;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 0.75rem center;
+            background-size: 1.25rem;
+        }
+
+    /* Enhanced Pagination */
+    .pagination-list {
+        padding: 0.5rem;
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-item {
+        font-weight: 500;
+        min-width: 2.5rem;
+        text-align: center;
+    }
+
+        .page-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+    /* Print Styles */
+    @@media print {
+        .action-buttons,
+        .search-box,
+        .pagination {
+            display: none;
+        }
+
+        .container {
+            padding: 0;
+        }
+
+        .product-table {
+            box-shadow: none;
+        }
+    }
+</style>

@@ -1,0 +1,276 @@
+﻿@model QuanLyCuaHangTapHoa.Models.Product
+@{
+    ViewBag.Title = "Xóa Sản Phẩm";
+    Layout = "~/Views/Shared/_layoutadmin.cshtml";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Xóa Sản Phẩm</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f6f8ff 0%, #f1f5ff 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .delete-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .delete-warning {
+            background: #fee2e2;
+            border-left: 4px solid #dc2626;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: #991b1b;
+        }
+
+        .product-info {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            background: #f8fafc;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+        }
+
+        .product-image {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 0.5rem;
+            object-fit: cover;
+            border: 1px solid #e2e8f0;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.875rem;
+        }
+
+        .info-value {
+            color: #1e293b;
+            font-size: 1rem;
+        }
+
+        .price-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .sale-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #fee2e2;
+            color: #dc2626;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-delete {
+            background: #dc2626;
+            color: white;
+        }
+
+            .btn-delete:hover {
+                background: #b91c1c;
+            }
+
+        .btn-cancel {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+            .btn-cancel:hover {
+                background: #e2e8f0;
+            }
+
+        .price-old {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-trash-alt"></i>
+                Xóa Sản Phẩm
+            </h1>
+        </div>
+
+        <div class="delete-card">
+            <div class="delete-warning">
+                <i class="fas fa-exclamation-triangle fa-lg"></i>
+                <div>
+                    <strong>Cảnh báo:</strong> Bạn có chắc chắn muốn xóa sản phẩm này?
+                    <br>Hành động này không thể hoàn tác và sẽ xóa vĩnh viễn sản phẩm khỏi hệ thống.
+                </div>
+            </div>
+
+            <div class="product-info">
+                <div>
+                    @if (!string.IsNullOrEmpty(Model.Picture))
+                    {
+                        <img src="@Model.FullPicturePath"
+                             alt="@Model.ProductName"
+                             class="product-image"
+                             onerror="this.onerror=null;this.src='/Resources/Pictures/Products/no-image.png'" />
+                    }
+                    else
+                    {
+                        <div class="product-image d-flex align-items-center justify-content-center bg-light">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                    }
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Tên sản phẩm</div>
+                        <div class="info-value">@Model.ProductName</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Mã sản phẩm</div>
+                        <div class="info-value">@Model.ProductCode</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Danh mục</div>
+                        <div class="info-value">@Model.Catalog.CatalogName</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Xuất xứ</div>
+                        <div class="info-value">@Model.Catalog.ProductOrigin</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Đã bán</div>
+                        <div class="info-value">@Model.ProductSold sản phẩm</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Giảm giá</div>
+                        <div class="info-value">
+                            @{
+                                double saleValue;
+                                bool hasSale = !string.IsNullOrEmpty(Model.ProductSale) && double.TryParse(Model.ProductSale, out saleValue) && saleValue > 0;
+                            }
+                            @if (hasSale)
+                            {
+                                <span class="sale-badge">-@Model.ProductSale%</span>
+                            }
+                            else
+                            {
+                                <span>Không có</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Giá vốn</div>
+                        <div class="info-value price-value">
+                            @String.Format("{0:N0}đ", Model.PriceOld)
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Giá bán</div>
+                        <div class="info-value">
+                            <div class="price-value">@String.Format("{0:N0}đ", Model.UnitPrice)</div>
+                            @if (hasSale)
+                            {
+                                <div class="price-old">@String.Format("{0:N0}đ", Model.PriceOld)</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+                <div class="button-group">
+                    <button type="submit" class="btn btn-delete">
+                        <i class="fas fa-trash-alt"></i>
+                        Xác nhận xóa
+                    </button>
+                    <a href="@Url.Action("Indexadminsp")" class="btn btn-cancel">
+                        <i class="fas fa-arrow-left"></i>
+                        Quay lại
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,375 @@
+﻿@model QuanLyCuaHangTapHoa.Models.KhachHang
+
+@{
+    ViewBag.Title = "Thông tin cá nhân";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="profile-container">
+    <div class="profile-card">
+        <div class="profile-header">
+            <h1 class="text-2xl font-bold mb-2">Thông tin cá nhân</h1>
+        </div>
+
+        @using (Html.BeginForm("Profile", "User", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.idUser)
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            <div class="upload-section">
+                <div class="upload-container">
+                    <div class="upload-preview">
+                        <img id="thumbimage"
+                             src="@(string.IsNullOrEmpty(Model.Picture) ? "/Resources/Pictures/Users/default-avatar.png" : "/Resources/Pictures/Users/" + Model.Picture)"
+                             alt="Profile Picture"
+                             class="preview-image" />
+                    </div>
+                    <div class="upload-controls">
+                        <input type="file" name="AnhDaiDien" id="AnhDaiDien" class="file-input" accept="image/*" />
+                        <label for="AnhDaiDien" class="upload-button">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            Chọn ảnh mới
+                        </label>
+                        @if (!string.IsNullOrEmpty(Model.Picture))
+                        {
+                            <div class="current-image-info">
+                                <p>Ảnh hiện tại: @Model.Picture</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.FirstName, "Họ", new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.FirstName, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(m => m.FirstName, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.LastName, "Tên", new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.LastName, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(m => m.LastName, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Email, "Email", new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email" })
+                    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Address, "Địa chỉ", new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.Address, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.NgaySinh, "Ngày sinh", new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.NgaySinh, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                    @Html.ValidationMessageFor(m => m.NgaySinh, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Sdt, "Số điện thoại", new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.Sdt, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(m => m.Sdt, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.CMT, "Số CMND/CCCD", new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.CMT, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(m => m.CMT, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="points-section">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">Điểm tích lũy:</span>
+                    <span class="points-badge">@Model.TichLuy điểm</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Cập nhật thông tin
+                </button>
+                @Html.ActionLink("Đổi mật khẩu", "ChangePassword", "User", null, new { @class = "btn btn-secondary" })
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Lưu trữ giá trị ban đầu của form
+        let initialFormData = {};
+
+        // Hàm lấy giá trị hiện tại của form
+        function getCurrentFormData() {
+            return {
+                firstName: $('#FirstName').val(),
+                lastName: $('#LastName').val(),
+                email: $('#Email').val(),
+                address: $('#Address').val(),
+                ngaySinh: $('#NgaySinh').val(),
+                sdt: $('#Sdt').val(),
+                cmt: $('#CMT').val(),
+                imageFile: $('#imageFile').val()
+            };
+        }
+
+        // Hàm kiểm tra form có thay đổi hay không
+        function hasFormChanged() {
+            const currentData = getCurrentFormData();
+            return Object.keys(currentData).some(key =>
+                currentData[key] !== initialFormData[key]
+            );
+        }
+
+        // Khởi tạo giá trị ban đầu khi trang load
+        $(document).ready(function () {
+            initialFormData = getCurrentFormData();
+
+            // Xử lý sự kiện submit form
+            $('form').on('submit', function (e) {
+                if (!hasFormChanged()) {
+                    e.preventDefault();
+
+                    // Tạo alert message
+                    const alertHtml = `
+                            <div class="alert alert-warning alert-dismissible fade show m-3">
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                Bạn chưa thay đổi thông tin nào. Vui lòng chỉnh sửa thông tin trước khi lưu!
+                            </div>
+                        `;
+
+                    // Chèn alert vào đầu form
+                    $(this).prepend(alertHtml);
+
+                    // Tự động ẩn alert sau 5 giây
+                    setTimeout(function () {
+                        $('.alert').fadeOut('slow');
+                    }, 5000);
+
+                    return false;
+                }
+            });
+        });
+
+        document.getElementById('AnhDaiDien').onchange = function (e) {
+            if (!this.files || !this.files[0]) return;
+
+
+            const file = this.files[0];
+
+            // Kiểm tra kích thước file (giới hạn 10MB)
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('Kích thước file không được vượt quá 10MB');
+                this.value = '';
+                return;
+            }
+
+            // Kiểm tra loại file
+            const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            if (!validImageTypes.includes(file.type)) {
+                alert('Vui lòng chọn file ảnh (JPEG, PNG, GIF)');
+                this.value = '';
+                return;
+            }
+
+            // Hiển thị ảnh preview
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const thumbimage = document.getElementById('thumbimage');
+                thumbimage.setAttribute('src', e.target.result);
+                thumbimage.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        };
+
+        // Lưu trữ giá trị ban đầu của form
+        let initialFormData = {};
+
+        // Hàm lấy giá trị hiện tại của form
+        function getCurrentFormData() {
+            return {
+                firstName: $('#FirstName').val(),
+                lastName: $('#LastName').val(),
+                email: $('#Email').val(),
+                address: $('#Address').val(),
+                ngaySinh: $('#NgaySinh').val(),
+                sdt: $('#Sdt').val(),
+                cmt: $('#CMT').val()
+            };
+        }
+
+        // Hàm kiểm tra form có thay đổi hay không
+        function hasFormChanged() {
+            const currentData = getCurrentFormData();
+            return Object.keys(currentData).some(key =>
+                currentData[key] !== initialFormData[key]
+            ) || $('#AnhDaiDien').val() !== '';
+        }
+
+        // Khởi tạo giá trị ban đầu khi trang load
+        $(document).ready(function () {
+            initialFormData = getCurrentFormData();
+        });
+    </script>
+}
+
+
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .profile-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, #4A90E2, #357ABD);
+        padding: 2rem;
+        color: white;
+        text-align: center;
+    }
+
+    .upload-section {
+        margin: 2rem 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .upload-preview {
+        width: 200px;
+        height: 200px;
+        border: 2px dashed #e2e8f0;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background-color: #f8fafc;
+        margin-bottom: 1rem;
+    }
+
+    .preview-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+        border-radius: 0.5rem;
+    }
+
+    .upload-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .upload-button:hover {
+            background: #f1f5f9;
+            border-color: #4A90E2;
+        }
+
+    .file-input {
+        display: none;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        transition: all 0.3s;
+    }
+
+        .form-control:focus {
+            border-color: #4A90E2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        padding: 2rem;
+    }
+
+    .points-section {
+        background: #f8fafc;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin: 0 2rem 2rem;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        padding: 0 2rem 2rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: #4A90E2;
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background: #357ABD;
+        }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #64748b;
+    }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+    .current-image-info {
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+
+    .points-badge {
+        background-color: #4A90E2;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        display: inline-block;
+    }
+</style>

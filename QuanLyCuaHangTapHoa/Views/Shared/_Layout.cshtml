@@ -1,0 +1,472 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Tạp Hóa 888</title>
+    <link rel="shortcut icon" type="image/png" href="~/Content/images/logo.png" />
+
+    <!-- Libraries -->
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="~/Content/Site.css" rel="stylesheet" />
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    @RenderSection("styles", required: false)
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="@Url.Action("TrangChu", "User")">
+                    <i class="fas fa-store"></i> Quản Lý Tạp Hóa
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("TrangChu", "User")">
+                                <i class="fas fa-home"></i> Trang chủ
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("TatCaSanPham", "Product")">
+                                <i class="fas fa-box"></i> Sản phẩm
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index", "XemDonHang")">
+                                <i class="fas fa-boxes"></i> Đơn hàng
+                            </a>
+                        </li>
+                    </ul>
+
+                    <ul class="navbar-nav">
+                        @if (Session["UserID"] != null)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#"
+                                   data-bs-toggle="dropdown"
+                                   aria-expanded="false"
+                                   id="userDropdown">
+                                    <i class="fas fa-user"></i> @Session["UserName"]
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li>
+                                        <a class="dropdown-item" href="@Url.Action("Profile", "User")">
+                                            <i class="fas fa-user-circle"></i> Thông tin cá nhân
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="@Url.Action("ChangePassword", "User")">
+                                            <i class="fas fa-key"></i> Đổi mật khẩu
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        @using (Html.BeginForm("Logout", "User", FormMethod.Post, new { id = "logoutForm", @class = "m-0" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                                            </button>
+                                        }
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("Login", "User")">
+                                    <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                                </a>
+                            </li>
+                        }
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index", "GioHang")">
+                                <i class="fas fa-shopping-cart"></i> Giỏ hàng
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mt-4">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @RenderBody()
+    </main>
+
+    <footer class="footer bg-dark text-white mt-5">
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <h5>Về chúng tôi</h5>
+                    <p>Hệ thống quản lý cửa hàng tạp hóa chuyên nghiệp</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Liên hệ</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-phone"></i> Hotline: 0377108687</li>
+                        <li><i class="fas fa-envelope"></i> Email: haip17683@gmail.com</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Địa chỉ: 350 Phạm Văn Đồng, Tân Phú, TP HCM</li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Theo dõi chúng tôi</h5>
+                    <div class="social-links">
+                        <a href="#" class="text-white me-2"><i class="fab fa-facebook fa-2x"></i></a>
+                        <a href="#" class="text-white me-2"><i class="fab fa-twitter fa-2x"></i></a>
+                        <a href="#" class="text-white me-2"><i class="fab fa-instagram fa-2x"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <h5>Vị trí cửa hàng</h5>
+                    <div class="rounded-2" id="map" style="height: 200px; width: 100%;"></div>
+                </div>
+            </div>
+
+            <div class="text-center py-3 border-top">
+                <p class="mb-0">&copy; @DateTime.Now.Year - Quản Lý Tạp Hóa. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    @RenderSection("scripts", required: false)
+    <!-- Google Maps API -->
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDJKlSX0lQKufoBwYpbBKUKir5h45amcFM&callback=initMap"></script>
+    <script>
+        function initMap() {
+            // Tọa độ cửa hàng (350 Phạm Văn Đồng, Tân Phú, TP HCM)
+            var storeLocation = { lat: 10.855337, lng: 106.748834 };
+
+            // Tạo bản đồ và đặt tọa độ trung tâm
+            var map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 16,
+                center: storeLocation,
+                styles: [
+                    {
+                        "featureType": "all",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#333333"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "landscape",
+                        "elementType": "all",
+                        "stylers": [
+                            {
+                                "color": "#f2f2f2"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi",
+                        "elementType": "all",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road",
+                        "elementType": "all",
+                        "stylers": [
+                            {
+                                "saturation": -100
+                            },
+                            {
+                                "lightness": 45
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "transit",
+                        "elementType": "all",
+                        "stylers": [
+                            {
+                                "visibility": "simplified"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "water",
+                        "elementType": "all",
+                        "stylers": [
+                            {
+                                "color": "#3498db"
+                            },
+                            {
+                                "visibility": "on"
+                            }
+                        ]
+                    }
+                ]
+            });
+
+            // Tạo marker cho cửa hàng
+            var marker = new google.maps.Marker({
+                position: storeLocation,
+                map: map,
+                title: 'Tạp Hóa 888',
+                animation: google.maps.Animation.DROP,
+                icon: {
+                    url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+                }
+            });
+
+            // Thêm thông tin khi click vào marker
+            var infoWindow = new google.maps.InfoWindow({
+                content: '<div style="width:200px; padding:5px;"><h6>Tạp Hóa 888</h6><p>350 Phạm Văn Đồng<br>Tân Phú, TP HCM<br>Hotline: 0377108687</p></div>'
+            });
+
+            marker.addListener('click', function () {
+                infoWindow.open(map, marker);
+            });
+        }
+    </script>
+</body>
+</html>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Khởi tạo các dropdown của Bootstrap
+            var dropdowns = [].slice.call(document.querySelectorAll('.dropdown-toggle'))
+            dropdowns.map(function (dropdownToggle) {
+                return new bootstrap.Dropdown(dropdownToggle)
+            });
+
+            // Xử lý form đăng xuất
+            $('#logoutForm').on('submit', function (e) {
+                e.preventDefault();
+                if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                    this.submit();
+                }
+            });
+        });
+        $(document).ready(function () {
+            setTimeout(function () {
+                $(".alert").fadeOut("slow");
+            }, 5000);
+
+            // Xử lý nút close của alert
+            $('.alert .btn-close').click(function () {
+                $(this).closest('.alert').fadeOut();
+            });
+        });
+    </script>
+}
+
+<style>
+    :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #3498db;
+        --accent-color: #e74c3c;
+        --background-color: #f8f9fa;
+        --text-color: #2c3e50;
+    }
+    /* Google Maps Styling */
+#map {
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    border: 2px solid rgba(255,255,255,0.2);
+    overflow: hidden;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+#map:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+/* Responsive map adjustments */
+@@media (max-width: 768px) {
+    #map {
+        height: 180px;
+        margin: 15px auto;
+        max-width: 300px;
+    }
+}
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--background-color);
+        color: var(--text-color);
+    }
+
+    /* Navbar Styling */
+    .navbar {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+        padding: 1rem 0;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    }
+
+    .navbar-brand {
+        font-weight: 600;
+        font-size: 1.4rem;
+    }
+
+        .navbar-brand i {
+            color: #ffd700;
+            margin-right: 0.5rem;
+        }
+
+    .nav-link {
+        font-weight: 500;
+        padding: 0.5rem 1rem !important;
+        transition: all 0.3s ease;
+    }
+
+        .nav-link:hover {
+            color: #ffd700 !important;
+            transform: translateY(-2px);
+        }
+
+    /* Dropdown Styling */
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        padding: 0.5rem;
+    }
+
+    .dropdown-item {
+        border-radius: 6px;
+        padding: 0.7rem 1rem;
+        transition: all 0.2s ease;
+    }
+
+        .dropdown-item:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            margin-right: 0.5rem;
+            text-align: center;
+        }
+
+    /* Main Content Area */
+    main.container {
+        min-height: calc(100vh - 300px);
+        padding: 2rem 1rem;
+    }
+
+    /* Alert Styling */
+    .alert {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        padding: 1rem 1.25rem;
+    }
+
+    .alert-success {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+    }
+
+    .alert-danger {
+        background: linear-gradient(135deg, #dc3545, #f86d7d);
+        color: white;
+    }
+
+    .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    /* Footer Styling */
+    .footer {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        padding: 3rem 0 1rem;
+        margin-top: 4rem;
+    }
+
+        .footer h5 {
+            color: #ffd700;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer p, .footer li {
+            color: rgba(255,255,255,0.8);
+            line-height: 1.8;
+        }
+
+    .social-links a {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        text-align: center;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        margin-right: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .social-links a:hover {
+            background: #ffd700;
+            color: var(--primary-color) !important;
+            transform: translateY(-3px);
+        }
+
+    /* Shopping Cart Badge */
+    .nav-link .badge {
+        position: relative;
+        top: -8px;
+        right: -8px;
+        padding: 0.25rem 0.5rem;
+        border-radius: 50%;
+        background-color: var(--accent-color);
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .navbar-brand {
+            font-size: 1.2rem;
+        }
+
+        .footer {
+            text-align: center;
+        }
+
+        .social-links {
+            margin-top: 1rem;
+        }
+    }
+</style>
+</head>
+<body>

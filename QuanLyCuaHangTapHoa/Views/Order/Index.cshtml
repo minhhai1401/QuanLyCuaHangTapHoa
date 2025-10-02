@@ -1,0 +1,833 @@
+﻿@model IEnumerable<QuanLyCuaHangTapHoa.Models.Order>
+@{
+    ViewBag.Title = "Quản lí đơn hàng";
+    Layout = "~/Views/Shared/_layoutadmin.cshtml";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quản lý Đơn Hàng</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-header">
+            <h1 class="page-title">
+                <i class="fas fa-file-invoice"></i>
+                Quản lý Đơn Hàng
+            </h1>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-label">Tổng số đơn hàng</div>
+                        <div class="stat-value">@ViewBag.TotalOrders</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-label">Tổng doanh thu</div>
+                        <div class="stat-value">@string.Format("{0:#,0} VNĐ", ViewBag.TotalRevenue)</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-label">Cập nhật lần cuối</div>
+                        <div class="stat-value">@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-panel">
+            <div class="filter-buttons">
+                <a class="filter-btn all-orders" href="@Url.Action("Index", "Order")">
+                    <i class="fas fa-list"></i>
+                    <span>Tất cả đơn hàng</span>
+                    <span class="count-badge">@ViewBag.TotalOrders</span>
+                </a>
+                <a class="filter-btn waiting" href="@Url.Action("Index", "Order", new { sort = "Wait" })">
+                    <i class="fas fa-clock"></i>
+                    <span>Chưa giao hàng</span>
+                    <span class="count-badge">@ViewBag.WaitingOrders</span>
+                </a>
+                <a class="filter-btn delivering" href="@Url.Action("Index", "Order", new { sort = "Deli" })">
+                    <i class="fas fa-truck"></i>
+                    <span>Đang giao hàng</span>
+                    <span class="count-badge">@ViewBag.DeliveringOrders</span>
+                </a>
+                <a class="filter-btn completed" href="@Url.Action("Index", "Order", new { sort = "Done" })">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Hoàn thành</span>
+                    <span class="count-badge">@ViewBag.CompletedOrders</span>
+                </a>
+                <a class="filter-btn cancelled" href="@Url.Action("Index", "Order", new { sort = "Cancel" })">
+                    <i class="fas fa-ban"></i>
+                    <span>Đã hủy</span>
+                    <span class="count-badge">@ViewBag.CancelledOrders</span>
+                </a>
+            </div>
+
+            <div class="search-box">
+                @using (Html.BeginForm("Index", "Order", FormMethod.Get, new { @class = "search-form" }))
+                {
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" name="searchStr" placeholder="Tìm kiếm theo ID đơn hàng..." value="@ViewBag.searchStr" />
+                        <button type="submit" class="search-button">
+                            <i class="fas fa-search"></i>
+                            Tìm kiếm
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="order-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i> Mã đơn</th>
+                        <th><i class="fas fa-user"></i> Người Đặt</th>
+                        <th><i class="fas fa-box"></i> Số lượng</th>
+                        <th><i class="fas fa-money-bill"></i> Thành tiền</th>
+                        <th><i class="fas fa-calendar"></i> Ngày đặt</th>
+                        <th><i class="fas fa-calendar-check"></i> Ngày giao</th>
+                        <th><i class="fas fa-info-circle"></i> Trạng thái</th>
+                        <th><i class="fas fa-cogs"></i> Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in ViewBag.orderList)
+                    {
+                        <tr class="order-row">
+                            <td><strong>#@item.ID</strong></td>
+                            <td>
+                                <div class="employee-info">
+                                    <i class="fas fa-user-circle"></i>
+                                    @if (item.KhachHang != null)
+                                    {
+                                        <span>@item.KhachHang.HoTen</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Không có thông tin</span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <div class="quantity-badge">
+                                    <i class="fas fa-box"></i>
+                                    @item.TongSoLuong
+                                </div>
+                            </td>
+                            <td class="price">@string.Format("{0:#,0} VNĐ", item.ThanhTien)</td>
+                            <td>@item.NgayDat.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="update-date" data-id="@item.ID">
+                                @(item.NgayGiao?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa có")
+                            </td>
+                            <td>
+                                @switch (item.Status)
+                                {
+                                    case "Chưa giao hàng":
+                                        <span class="status-badge waiting">
+                                            <i class="fas fa-clock"></i>
+                                            <text>@item.Status</text>
+                                        </span>
+                                        break;
+                                    case "Đang giao hàng":
+                                        <span class="status-badge delivering">
+                                            <i class="fas fa-truck"></i>
+                                            <text>@item.Status</text>
+                                        </span>
+                                        break;
+                                    case "Hoàn thành":
+                                        <span class="status-badge completed">
+                                            <i class="fas fa-check-circle"></i>
+                                            <text>@item.Status</text>
+                                        </span>
+                                        break;
+                                    case "Đã hủy":
+                                        <span class="status-badge cancelled">
+                                            <i class="fas fa-ban"></i>
+                                            <text>@item.Status</text>
+                                        </span>
+                                        break;
+                                    default:
+                                        <span class="status-badge">
+                                            <i class="fas fa-question-circle"></i>
+                                            <text>@item.Status</text>
+                                        </span>
+                                        break;
+                                }
+                            </td>
+                            <td class="actions">
+                                <a href="@Url.Action("Detail", "Order", new { Id = item.ID })"
+                                   class="action-button view-button">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                @if (item.Status == "Hoàn thành")
+                                {
+                                    <a href="@Url.Action("Detail", "Order", new { Id = item.ID })"
+                                       class="action-button print-button">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                }
+                                @if (item.Status == "Chưa giao hàng")
+                                {
+                                    <button class="action-button cancel-button"
+                                            onclick="huyDon(@item.ID); return false;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <ul>
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <li>
+                        <a href="@Url.Action("Index", "Order", new { page = ViewBag.CurrentPage - 1, sort = ViewBag.Sort, searchStr = ViewBag.searchStr })" class="page-link prev">
+                            <i class="fas fa-chevron-left"></i> Trước
+                        </a>
+                    </li>
+                }
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <li>
+                        <a href="@Url.Action("Index", "Order", new { page = i, sort = ViewBag.Sort, searchStr = ViewBag.searchStr })"
+                           class="page-link @(i == ViewBag.CurrentPage ? "active" : "")">@i</a>
+                    </li>
+                }
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <li>
+                        <a href="@Url.Action("Index", "Order", new { page = ViewBag.CurrentPage + 1, sort = ViewBag.Sort, searchStr = ViewBag.searchStr })" class="page-link next">
+                            Tiếp <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function updateOrderDate(orderId, deliveryDate) {
+            const updateDateCell = document.querySelector(`.update-date[data-id="${orderId}"]`);
+            if (updateDateCell && deliveryDate) {
+                updateDateCell.textContent = new Date(deliveryDate).toLocaleString('vi-VN', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        }
+
+        // Sửa lại hàm huyDon
+        function huyDon(id) {
+            if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
+                $.ajax({
+                    url: '@Url.Action("HuyDon", "Order")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function(response) {
+                        if (response.success) {
+                            location.reload(); // Chỉ cần reload trang
+                        } else {
+                            alert(response.message || 'Có lỗi xảy ra khi hủy đơn hàng.');
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi hủy đơn hàng.');
+                    }
+                });
+            }
+        }
+
+        function huyDon(id) {
+            if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
+                $.ajax({
+                    url: '@Url.Action("HuyDon", "Order")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function(response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert(response.message || 'Có lỗi xảy ra khi hủy đơn hàng.');
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi hủy đơn hàng.');
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    body {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, #ffd700 0%, #ffbb00 100%);
+        padding: 2.5rem;
+        border-radius: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(255, 215, 0, 0.3);
+        color: #744210;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+            animation: rotate 20s linear infinite;
+        }
+
+    @@keyframes rotate {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+        .page-title i {
+            font-size: 2rem;
+        }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-item {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 1.5rem;
+        border-radius: 1rem;
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+        }
+
+    .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .stat-info {
+        flex: 1;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        opacity: 0.8;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    .action-panel {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        color: white;
+        position: relative;
+    }
+
+        .filter-btn i {
+            font-size: 1.1rem;
+        }
+
+    .count-badge {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+    }
+
+    .all-orders {
+        background: #6b7280;
+    }
+
+        .all-orders:hover {
+            background: #4b5563;
+        }
+
+    .waiting {
+        background: #3b82f6;
+    }
+
+        .waiting:hover {
+            background: #2563eb;
+        }
+
+    .delivering {
+        background: #f59e0b;
+    }
+
+        .delivering:hover {
+            background: #d97706;
+        }
+
+    .completed {
+        background: #10b981;
+    }
+
+        .completed:hover {
+            background: #059669;
+        }
+
+    .cancelled {
+        background: #ef4444;
+    }
+
+        .cancelled:hover {
+            background: #dc2626;
+        }
+
+    .search-box {
+        position: relative;
+    }
+
+    .search-container {
+        display: flex;
+        align-items: center;
+        background: #f3f4f6;
+        border-radius: 0.75rem;
+        padding: 0.5rem 1rem;
+        gap: 0.75rem;
+    }
+
+    .search-icon {
+        color: #6b7280;
+    }
+
+    .search-container input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 0.5rem;
+        font-size: 1rem;
+        color: #374151;
+        outline: none;
+    }
+
+    .search-button {
+        background: #fbbf24;
+        color: #92400e;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .search-button:hover {
+            background: #f59e0b;
+        }
+
+    .order-table {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    th {
+        background: #fffbeb;
+        color: #92400e;
+        font-weight: 600;
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 2px solid #fef3c7;
+    }
+
+        th i {
+            margin-right: 0.5rem;
+            color: #d97706;
+        }
+
+    td {
+        padding: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+        color: #4b5563;
+    }
+
+    .order-row {
+        transition: background-color 0.3s ease;
+    }
+
+        .order-row:hover {
+            background: #fffbeb;
+        }
+
+    .employee-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .quantity-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #f3f4f6;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+    }
+
+    .price {
+        font-weight: 600;
+        color: #92400e;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+    }
+
+        .status-badge.waiting {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .status-badge.delivering {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.completed {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .status-badge.cancelled {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+    .actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .view-button {
+        background: #fbbf24;
+        color: #92400e;
+    }
+
+        .view-button:hover {
+            background: #f59e0b;
+        }
+
+    .more-button {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+        .more-button:hover {
+            background: #e5e7eb;
+        }
+
+    .action-dropdown {
+        position: relative;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        z-index: 10;
+        min-width: 150px;
+    }
+
+    .action-dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    .dropdown-content a {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        color: #4b5563;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+
+        .dropdown-content a:hover {
+            background: #f3f4f6;
+        }
+
+        .dropdown-content a.text-danger {
+            color: #dc2626;
+        }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+        .pagination ul {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+        }
+
+    .page-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: white;
+        border-radius: 0.5rem;
+        color: #4b5563;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+        .page-link:hover {
+            background: #fbbf24;
+            color: #92400e;
+        }
+
+        .page-link.active {
+            background: #fbbf24;
+            color: #92400e;
+            font-weight: 600;
+        }
+
+    .prev, .next {
+        font-weight: 500;
+    }
+
+    @@media (max-width: 768px) {
+        .stats {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-buttons {
+            flex-direction: column;
+        }
+
+        .filter-btn {
+            width: 100%;
+        }
+
+        .actions {
+            flex-direction: column;
+        }
+
+        .action-button {
+            width: 100%;
+        }
+    }
+
+    .order-table {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .print-button {
+        background: #4b5563;
+        color: white;
+    }
+
+    .update-date {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .print-button:hover {
+        background: #374151;
+    }
+
+    .cancel-button {
+        background: #ef4444;
+        color: white;
+    }
+
+        .cancel-button:hover {
+            background: #dc2626;
+        }
+
+    /* Chỉnh sửa lại style cho các nút thao tác */
+    .actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .action-button {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    /* Đảm bảo các cột có chiều rộng phù hợp */
+    table th:nth-child(1), /* Mã đơn */
+    table td:nth-child(1) {
+        width: 100px;
+    }
+
+    table th:nth-child(2), /* Nhân viên */
+    table td:nth-child(2) {
+        width: 200px;
+    }
+
+    table th:nth-child(3), /* Số lượng */
+    table td:nth-child(3) {
+        width: 100px;
+    }
+
+    table th:nth-child(4), /* Thành tiền */
+    table td:nth-child(4) {
+        width: 150px;
+    }
+
+    table th:nth-child(5), /* Ngày đặt */
+    table td:nth-child(5) {
+        width: 150px;
+    }
+
+    table th:nth-child(6), /* Trạng thái */
+    table td:nth-child(6) {
+        width: 150px;
+    }
+
+    table th:nth-child(7), /* Thao tác */
+    table td:nth-child(7) {
+        width: 200px;
+    }
+</style>

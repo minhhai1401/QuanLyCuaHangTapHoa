@@ -1,0 +1,144 @@
+﻿@{
+    ViewBag.Title = "Đăng xuất";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Xác nhận đăng xuất</h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-sign-out-alt fa-4x text-primary mb-3"></i>
+                        <h4>Bạn có chắc chắn muốn đăng xuất?</h4>
+                        <p class="text-muted">Bạn sẽ cần đăng nhập lại để tiếp tục sử dụng các tính năng của hệ thống.</p>
+                    </div>
+
+                    @using (Html.BeginForm("Logout", "User", FormMethod.Post, new { @class = "text-center" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-out-alt me-2"></i>Xác nhận đăng xuất
+                            </button>
+                            <a href="@Url.Action("TrangChu", "User")" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Hủy
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Thông tin phiên đăng nhập hiện tại -->
+            @if (Session["UserID"] != null)
+            {
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Thông tin phiên đăng nhập</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="@Session["UserAvatar"]" alt="Avatar" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;" onerror="this.src='/Content/images/default-avatar.png'" />
+                            <div>
+                                <h6 class="mb-0">@Session["UserName"]</h6>
+                                <small class="text-muted">@Session["UserEmail"]</small>
+                            </div>
+                        </div>
+                        <div class="text-muted">
+                            <small>
+                                <i class="fas fa-clock me-2"></i>Đăng nhập từ: @DateTime.Now.ToString("HH:mm dd/MM/yyyy")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .card {
+            border: none;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+        }
+
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+        }
+
+        .fa-sign-out-alt {
+            color: #dc3545;
+        }
+
+        .text-muted {
+            color: #6c757d !important;
+        }
+
+        .rounded-circle {
+            border: 2px solid #e9ecef;
+        }
+
+        /* Animation cho icon */
+        .fa-4x {
+            animation: pulse 2s infinite;
+        }
+
+        @@keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Hover effects */
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Animation cho card khi load trang
+            $('.card').hide().fadeIn(500);
+
+            // Xử lý form submit
+            $('form').on('submit', function (e) {
+                e.preventDefault();
+
+                // Disabled buttons khi đang xử lý
+                var submitBtn = $(this).find('button[type="submit"]');
+                var cancelBtn = $(this).find('.btn-outline-secondary');
+
+                submitBtn.prop('disabled', true)
+                    .html('<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...');
+                cancelBtn.prop('disabled', true);
+
+                // Submit form sau 1 giây để show animation
+                setTimeout(() => {
+                    this.submit();
+                }, 1000);
+            });
+        });
+    </script>
+}

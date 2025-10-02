@@ -1,0 +1,371 @@
+﻿@using QuanLyCuaHangTapHoa.Models;
+@{
+    quantaphoaEntities _db = new quantaphoaEntities();
+    NhanVien nvSession = (NhanVien)Session["NV"];
+    NhanVien nv = _db.NhanViens.Find(nvSession.Id);
+}
+<aside class="qtph-sidebar" id="qtphSidebar">
+    <!-- User profile section remains unchanged -->
+    <div class="qtph-user-profile">
+        <div class="qtph-profile-wrapper">
+            <img src="~/Hinh/NhanVien/@nv.Picture" alt="@nv.FullName" class="qtph-profile-image">
+            <span class="qtph-status-badge" title="Online"></span>
+        </div>
+        <div class="qtph-user-info">
+            <h3 class="qtph-user-name">@nv.FullName</h3>
+            <p class="qtph-user-role">@nv.ChucVu.ChucVu1</p>
+        </div>
+    </div>
+
+    <div class="qtph-menu-section">
+        <h4 class="qtph-menu-header">Quản lý chung</h4>
+        <ul class="qtph-menu-list">
+            <li class="qtph-menu-item" style="--item-index: 1">
+                <a href="@Url.Action("Indexadmin","Home")" class="qtph-menu-link">
+                    <span class="qtph-menu-icon"><i class="bx bx-tachometer"></i></span>
+                    <span class="qtph-menu-text">Bảng điều khiển</span>
+                    <span class="qtph-tooltip">Bảng điều khiển</span>
+                </a>
+            </li>
+
+            @if (nv.MaChucVu == 2)
+            {
+                <li class="qtph-menu-item" style="--item-index: 2">
+                    <a href="@Url.Action("Index","NhanVien")" class="qtph-menu-link">
+                        <span class="qtph-menu-icon"><i class="bx bx-user"></i></span>
+                        <span class="qtph-menu-text">Quản lý Nhân viên</span>
+                        <span class="qtph-menu-badge">@_db.NhanViens.Count()</span>
+                        <span class="qtph-tooltip">Quản lý Nhân viên</span>
+                    </a>
+                </li>
+            }
+
+            <li class="qtph-menu-item" style="--item-index: 3">
+                <a href="@Url.Action("Index", "KhachHang")" class="qtph-menu-link">
+                    <span class="qtph-menu-icon"><i class="bx bx-group"></i></span>
+                    <span class="qtph-menu-text">Quản lý Khách hàng</span>
+                    <span class="qtph-menu-badge">@_db.KhachHangs.Count()</span>
+                    <span class="qtph-tooltip">Quản lý Khách hàng</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="qtph-divider"></div>
+
+        <h4 class="qtph-menu-header">Quản lý kinh doanh</h4>
+        <ul class="qtph-menu-list">
+            <li class="qtph-menu-item" style="--item-index: 4">
+                <a href="@Url.Action("Indexadminsp","Product")" class="qtph-menu-link">
+                    <span class="qtph-menu-icon"><i class="bx bx-package"></i></span>
+                    <span class="qtph-menu-text">Quản lý Sản phẩm</span>
+                    <span class="qtph-menu-badge">@_db.Products.Count()</span>
+                    <span class="qtph-tooltip">Quản lý Sản phẩm</span>
+                </a>
+            </li>
+
+            <li class="qtph-menu-item" style="--item-index: 5">
+                <a href="@Url.Action("Index","Order")" class="qtph-menu-link">
+                    <span class="qtph-menu-icon"><i class="bx bx-receipt"></i></span>
+                    <span class="qtph-menu-text">Quản lý Đơn hàng</span>
+                    <span class="qtph-menu-badge">@_db.Orders.Count()</span>
+                    <span class="qtph-tooltip">Quản lý Đơn hàng</span>
+                </a>
+            </li>
+
+            @if (nv.MaChucVu == 2)
+            {
+                <li class="qtph-menu-item" style="--item-index: 6">
+                    <a href="@Url.Action("Index","DoanhThu")" class="qtph-menu-link">
+                        <span class="qtph-menu-icon"><i class="bx bx-line-chart"></i></span>
+                        <span class="qtph-menu-text">Báo cáo Doanh thu</span>
+                        <span class="qtph-tooltip">Báo cáo Doanh thu</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+</aside>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Toggle sidebar
+        const toggleBtn = document.querySelector('[data-toggle="sidebar"]');
+        const sidebar = document.getElementById('qtphSidebar');
+        const content = document.querySelector('.app-content');
+
+        if (toggleBtn && sidebar) {
+            toggleBtn.addEventListener('click', function () {
+                sidebar.classList.toggle('qtph-collapsed');
+                content.style.marginLeft = sidebar.classList.contains('qtph-collapsed') ? '80px' : '280px';
+            });
+        }
+
+        // Active menu item
+        const currentUrl = window.location.href;
+        const menuLinks = document.querySelectorAll('.qtph-menu-link');
+
+        menuLinks.forEach(link => {
+            if (link.href === currentUrl) {
+                link.classList.add('qtph-active');
+                // Scroll active item into view
+                link.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+
+        // Hover effect for collapsed menu
+        const menuItems = document.querySelectorAll('.qtph-menu-item');
+        menuItems.forEach(item => {
+            const icon = item.querySelector('.qtph-menu-icon');
+            item.addEventListener('mouseenter', () => {
+                if (sidebar.classList.contains('qtph-collapsed')) {
+                    icon.style.transform = 'scale(1.2)';
+                }
+            });
+            item.addEventListener('mouseleave', () => {
+                if (sidebar.classList.contains('qtph-collapsed')) {
+                    icon.style.transform = 'scale(1)';
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    .qtph-sidebar {
+        background: linear-gradient(165deg, #2D3250 0%, #424769 100%);
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+
+        .qtph-sidebar.qtph-collapsed {
+            width: 80px;
+        }
+
+    .qtph-user-profile {
+        padding: 2rem 1.5rem;
+        text-align: center;
+        position: relative;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .qtph-profile-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    .qtph-profile-image {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 3px solid #7C81AD;
+        padding: 3px;
+        background: white;
+        transition: all 0.3s ease;
+        object-fit: cover;
+    }
+
+        .qtph-profile-image:hover {
+            transform: scale(1.05);
+            border-color: #F6B17A;
+        }
+
+    .qtph-status-badge {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 12px;
+        height: 12px;
+        background: #4CAF50;
+        border: 2px solid white;
+        border-radius: 50%;
+    }
+
+    .qtph-user-info {
+        margin-top: 1rem;
+        color: white;
+    }
+
+    .qtph-user-name {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 0.3rem;
+        color: #F6B17A;
+    }
+
+    .qtph-user-role {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .qtph-menu-section {
+        padding: 1.5rem 1rem;
+    }
+
+    .qtph-menu-header {
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 0 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .qtph-menu-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .qtph-menu-item {
+        margin-bottom: 0.5rem;
+    }
+
+    .qtph-menu-link {
+        display: flex;
+        align-items: center;
+        padding: 0.8rem 1rem;
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .qtph-menu-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .qtph-menu-link.qtph-active {
+            background: #F6B17A;
+            color: #2D3250;
+            font-weight: 500;
+        }
+
+            .qtph-menu-link.qtph-active::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0;
+                height: 100%;
+                width: 4px;
+                background: white;
+            }
+
+    .qtph-menu-icon {
+        width: 1.5rem;
+        height: 1.5rem;
+        margin-right: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .qtph-menu-text {
+        flex: 1;
+        white-space: nowrap;
+        opacity: 1;
+        transition: all 0.3s ease;
+    }
+
+    .qtph-menu-badge {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 0.2rem 0.5rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+    }
+
+    .qtph-collapsed .qtph-menu-text,
+    .qtph-collapsed .qtph-menu-badge,
+    .qtph-collapsed .qtph-user-info {
+        opacity: 0;
+        width: 0;
+        display: none;
+    }
+
+    .qtph-collapsed .qtph-profile-image {
+        width: 40px;
+        height: 40px;
+    }
+
+    .qtph-menu-item:hover .qtph-menu-icon {
+        transform: scale(1.2);
+        color: #F6B17A;
+    }
+
+    .qtph-divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 1rem 0;
+    }
+
+    /* Animation keyframes */
+    @@keyframes qtphSlideIn {
+        from {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .qtph-menu-item {
+        animation: qtphSlideIn 0.3s ease forwards;
+        animation-delay: calc(var(--item-index) * 0.1s);
+        opacity: 0;
+    }
+
+    /* Tooltip styles */
+    .qtph-tooltip {
+        position: absolute;
+        background: #2D3250;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.3rem;
+        font-size: 0.8rem;
+        left: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        margin-left: 0.5rem;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        white-space: nowrap;
+    }
+
+    .qtph-collapsed .qtph-menu-link:hover .qtph-tooltip {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .qtph-sidebar {
+        background: linear-gradient(165deg, #2D3250 20%, #424769 100%);
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        transition: all 0.3s ease;
+        z-index: 1000;
+        overflow-y: auto; /* Cho phép cuộn dọc */
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+        .qtph-sidebar::-webkit-scrollbar {
+            display: none;
+        }
+</style>

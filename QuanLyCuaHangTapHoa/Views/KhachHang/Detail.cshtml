@@ -1,0 +1,327 @@
+﻿@model QuanLyCuaHangTapHoa.Models.KhachHang
+@{
+    ViewBag.Title = "Thông tin cá nhân khách hàng";
+    Layout = "~/Views/Shared/_layoutadmin.cshtml";
+}
+
+<div class="min-h-screen bg-gradient">
+    <div class="container">
+        <!-- Header Card -->
+        <div class="dashboard-header">
+            <div class="header-content">
+                <div class="title-section">
+                    <i class="fas fa-user"></i>
+                    <h1>Thông tin khách hàng #@Model.idUser</h1>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Details Card -->
+        <div class="customer-card detail-container">
+            <div class="detail-content">
+                <div class="detail-avatar">
+                    @if (string.IsNullOrEmpty(Model.Picture))
+                    {
+                        <div class="avatar-placeholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    }
+                    else
+                    {
+                        <img src="~/Hinh/KhachHang/@Model.Picture" alt="Ảnh đại diện" class="avatar-image" />
+                    }
+                </div>
+                <div class="detail-info">
+                    <div class="info-group">
+                        <div class="info-item">
+                            <label>Họ và tên</label>
+                            <div class="info-value">@Model.HoTen</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Email</label>
+                            <div class="info-value">@Model.Email</div>
+                        </div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-item">
+                            <label>Địa chỉ</label>
+                            <div class="info-value">@Model.Address</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Ngày sinh</label>
+                            <div class="info-value">@(Model.NgaySinh?.ToString("dd/MM/yyyy"))</div>
+                        </div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-item">
+                            <label>Số điện thoại</label>
+                            <div class="info-value">@Model.Sdt</div>
+                        </div>
+                        <div class="info-item">
+                            <label>CMND/CCCD</label>
+                            <div class="info-value">@Model.CMT</div>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <a href="@Url.Action("Edit", "KhachHang", new { id = Model.idUser })" class="action-button">
+                            <i class="fas fa-edit"></i>
+                            Chỉnh sửa
+                        </a>
+                        <a href="@Url.Action("Index", "KhachHang")" class="cancel-button">
+                            <i class="fas fa-arrow-left"></i>
+                            Quay lại
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Common Styles */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .bg-gradient {
+        background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Header Styles */
+    .dashboard-header {
+        background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        box-shadow: 0 10px 25px -5px rgba(0, 188, 212, 0.25);
+    }
+
+    .header-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .title-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+        .title-section i.fas {
+            font-size: 2rem; /* Điều chỉnh cùng kích thước với text */
+            color: white;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            padding: 0.5rem;
+        }
+
+        .title-section h1 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+    /* Detail View Styles */
+    .detail-container {
+        padding: 2rem;
+    }
+
+    .detail-content {
+        display: flex;
+        gap: 3rem;
+    }
+
+    .detail-avatar {
+        flex: 0 0 300px;
+    }
+
+    .avatar-image {
+        width: 100%;
+        height: 300px;
+        border-radius: 1rem;
+        object-fit: cover;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .avatar-placeholder {
+        width: 100%;
+        height: 300px;
+        border-radius: 1rem;
+        background: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        color: #94a3b8;
+    }
+
+    .detail-info {
+        flex: 1;
+    }
+
+    .info-group {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-item {
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e2e8f0;
+    }
+
+        .info-item label {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+    .info-value {
+        color: #1e293b;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    /* Edit Form Styles */
+    .edit-form {
+        padding: 2rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .form-group label {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+    .form-input {
+        padding: 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        outline: none;
+        transition: all 0.3s;
+    }
+
+        .form-input:focus {
+            border-color: #00bcd4;
+            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.1);
+        }
+
+    .file-input {
+        padding: 0.5rem;
+    }
+
+    /* Button Styles */
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        justify-content: flex-end;
+    }
+
+    .action-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: #00bcd4;
+        color: white;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+        .action-button:hover {
+            background: #0097a7;
+            transform: translateY(-1px);
+        }
+
+    .cancel-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: #e2e8f0;
+        color: #64748b;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+        .cancel-button:hover {
+            background: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+    /* Validation Styles */
+    .validate {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Responsive Adjustments */
+    @@media (max-width: 768px) {
+        .detail-content {
+            flex-direction: column;
+        }
+
+        .detail-avatar {
+            flex: none;
+            max-width: 100%;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group.full-width {
+            grid-column: auto;
+        }
+
+        .info-group {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

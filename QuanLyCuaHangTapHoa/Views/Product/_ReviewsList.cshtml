@@ -1,0 +1,34 @@
+﻿@model IEnumerable<QuanLyCuaHangTapHoa.Models.DanhGia>
+@using QuanLyCuaHangTapHoa.Models
+@foreach (var review in Model)
+{
+    <div class="review-card mb-4 hover:shadow-lg transition-shadow duration-300">
+        <div class="review-header bg-gray-50 p-4">
+            <div class="flex items-center">
+                <img src="@(string.IsNullOrEmpty(review.KhachHang.Picture) ? "/Content/images/default-avatar.png" : "/Resources/Pictures/Users/" + review.KhachHang.Picture)"
+                     class="reviewer-avatar"
+                     alt="@review.KhachHang.HoTen">
+                <div class="reviewer-info ml-3">
+                    <h5 class="reviewer-name mb-0">@review.KhachHang.HoTen</h5>
+                    <small class="text-muted">@review.Ngaycapnhap.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                </div>
+            </div>
+            <div class="rating-display mt-2">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    if (i <= review.Rating)
+                    {
+                        <i class="fas fa-star text-warning"></i>
+                    }
+                    else
+                    {
+                        <i class="far fa-star text-warning"></i>
+                    }
+                }
+            </div>
+        </div>
+        <div class="review-content p-4">
+            <p class="mb-0">@review.Content</p>
+        </div>
+    </div>
+}

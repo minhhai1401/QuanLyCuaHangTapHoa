@@ -1,0 +1,1046 @@
+﻿@model QuanLyCuaHangTapHoa.Models.Order
+
+@{
+    ViewBag.Title = "Doanh Thu Năm";
+    Layout = "~/Views/Shared/_layoutadmin.cshtml";
+}
+
+<div class="container ViewPrint">
+    <div class="dashboard-header">
+        <h1 class="page-title">
+            <i class="fas fa-calendar-alt"></i>
+            Báo Cáo Doanh Thu Năm @ViewBag.Nam
+        </h1>
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-icon"><i class="fas fa-shopping-bag"></i></div>
+                <div class="stat-info">
+                    <div class="stat-label">Tổng sản phẩm bán được</div>
+                    <div class="stat-value">@ViewBag.DoanhThuNamCount</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+                <div class="stat-info">
+                    <div class="stat-label">Tổng doanh thu</div>
+                    <div class="stat-value">@String.Format("{0:N0}", @ViewBag.DoanhThuNam) VNĐ</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-info">
+                    <div class="stat-label">Thời gian</div>
+                    <div class="stat-value">@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-row">
+        <!-- Biểu đồ doanh thu theo tháng -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title"><i class="fas fa-chart-bar"></i> Doanh thu theo tháng</h3>
+            </div>
+            <div class="chart-body">
+                <canvas id="monthlyRevenueChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Biểu đồ so sánh với năm trước -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title"><i class="fas fa-chart-line"></i> So sánh với năm @(ViewBag.Nam - 1)</h3>
+            </div>
+            <div class="chart-body">
+                <canvas id="yearComparisonChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="order-table">
+        <table>
+            <thead>
+                <tr>
+                    <th><i class="fas fa-hashtag"></i> Mã đơn</th>
+                    <th><i class="fas fa-user"></i> Người đặt</th>
+                    <th><i class="fas fa-money-bill"></i> Thanh toán</th>
+                    <th><i class="fas fa-info-circle"></i> Trạng thái</th>
+                    <th><i class="fas fa-calendar"></i> Ngày đặt</th>
+                    <th><i class="fas fa-calendar-check"></i> Ngày giao</th>
+                    <th><i class="fas fa-money-bill-wave"></i> Thành tiền</th>
+                    <th><i class="fas fa-cogs"></i> Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in ViewBag.ListCountDTN)
+                {
+                    <tr class="order-row">
+                        <td><strong>#@item.ID</strong></td>
+                        <td>
+                            <div class="employee-info">
+                                <i class="fas fa-user-circle"></i>
+                                <span>@(item.KhachHang != null ? item.KhachHang.HoTen : "N/A")</span>
+                            </div>
+                        </td>
+                        <td>
+                            @*@if (item.Payment == true)
+                                {*@
+                            <span class="status-badge completed">
+                                <i class="fas fa-check-circle"></i>
+                                <text>Đã thanh toán</text>
+                            </span>
+                            @*}
+                                else
+                                {
+                                    <span class="status-badge waiting">
+                                        <i class="fas fa-clock"></i>
+                                        <text>Chưa thanh toán</text>
+                                    </span>
+                                }*@
+                        </td>
+                        <td>
+                            <span class="status-badge completed">
+                                <i class="fas fa-check-circle"></i>
+                                <text>@item.Status</text>
+                            </span>
+                        </td>
+                        <td>@(item.NgayDat != null ? item.NgayDat.ToString("dd/MM/yyyy HH:mm") : "N/A")</td>
+                        <td>@(item.NgayGiao != null ? item.NgayGiao.ToString("dd/MM/yyyy HH:mm") : "N/A")</td>
+                        <td class="price">@String.Format("{0:N0}", item.ThanhTien) VNĐ</td>
+                        <td class="actions">
+                            <a href="@Url.Action("Detail", "Order", new { id = item.ID })" class="action-button view-button">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="@Url.Action("Detail", "Order", new { id = item.ID })" class="action-button print-button">
+                                <i class="fas fa-print"></i>
+                            </a>
+                            <button class="action-button delete-button" onclick="confirmDelete(@item.ID)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="action-panel">
+        <div class="row">
+            <div class="col-md-6">
+                <button class="action-button print-button" id="Print" type="button">
+                    <i class="fas fa-print"></i> In báo cáo
+                </button>
+                @Html.ActionLink("Quay lại", "Index", null, new { @class = "action-button view-button" })
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="warning-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h4 class="modal-title">Xác nhận xóa đơn hàng</h4>
+        </div>
+        <div class="modal-body">
+            <p class="warning-message">Bạn có chắc chắn muốn xóa đơn hàng này?</p>
+            <p class="warning-detail">Hành động này không thể hoàn tác và sẽ xóa vĩnh viễn đơn hàng khỏi hệ thống!</p>
+            <div class="order-preview">
+                <div class="order-id">#<span id="deleteOrderId">--</span></div>
+            </div>
+
+            <div class="confirmation-input">
+                <p class="confirm-instruction">Nhập "<span class="delete-text">XÓA</span>" để xác nhận:</p>
+                <input type="text"
+                       id="deleteConfirmation"
+                       class="confirm-input"
+                       placeholder="Nhập XÓA..."
+                       autocomplete="off">
+                <div class="input-validation">
+                    <i class="fas fa-check"></i>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel" onclick="closeDeleteModal()">
+                <i class="fas fa-times"></i>
+                Hủy
+            </button>
+            <button type="button" class="btn-confirm" id="deleteButton" disabled onclick="deleteOrder()">
+                <i class="fas fa-trash-alt"></i>
+                Xóa đơn hàng
+            </button>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="~/Content/printThis.js"></script>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, #86efac 0%, #22c55e 100%);
+        padding: 2.5rem;
+        border-radius: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.3);
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        color: white;
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .stat-item {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 1.5rem;
+        border-radius: 1rem;
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+        }
+
+    .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .stat-info {
+        color: white;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        opacity: 0.9;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    .order-table {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    th {
+        background: #f0fdf4;
+        color: #166534;
+        font-weight: 600;
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 2px solid #dcfce7;
+    }
+
+    td {
+        padding: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+        color: #4b5563;
+    }
+
+    .order-row:hover {
+        background: #f0fdf4;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+    }
+
+        .status-badge.completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-badge.waiting {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+    .action-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        margin-right: 0.5rem;
+    }
+
+    .view-button {
+        background: #22c55e;
+        color: white;
+    }
+
+        .view-button:hover {
+            background: #16a34a;
+        }
+
+    .print-button {
+        background: #4b5563;
+        color: white;
+    }
+
+        .print-button:hover {
+            background: #374151;
+        }
+
+    .price {
+        font-weight: 600;
+        color: #166534;
+    }
+
+    .employee-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .action-panel {
+        margin-top: 2rem;
+    }
+
+    .actions {
+        white-space: nowrap;
+        min-width: 135px; /* Đảm bảo cột đủ rộng */
+    }
+
+        /* Điều chỉnh các action button */
+        .actions .action-button {
+            padding: 0.4rem 0.6rem; /* Giảm padding */
+            margin-right: 0.25rem; /* Giảm margin */
+            min-width: 32px; /* Đặt chiều rộng tối thiểu */
+            justify-content: center; /* Căn giữa icon */
+        }
+
+            .actions .action-button:last-child {
+                margin-right: 0; /* Bỏ margin của button cuối */
+            }
+
+            /* Điều chỉnh icon trong button */
+            .actions .action-button i {
+                margin: 0; /* Bỏ margin của icon */
+                font-size: 0.9rem; /* Giảm kích thước icon một chút */
+            }
+
+            /* Ẩn text, chỉ hiện icon */
+            .actions .action-button span {
+                display: none;
+            }
+
+    @@media (max-width: 768px) {
+        .stats {
+            grid-template-columns: 1fr;
+        }
+
+        .actions {
+            flex-direction: column;
+        }
+
+        .action-button {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+    }
+
+    .text-danger {
+        color: #dc2626;
+    }
+    /* Thêm style cho nút xóa */
+    .delete-button {
+        background: #ef4444;
+        color: white;
+    }
+
+        .delete-button:hover {
+            background: #dc2626;
+        }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+        animation: modalFadeIn 0.3s ease-out;
+    }
+
+    @@keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .modal-content {
+        background-color: #fff;
+        margin: 7% auto;
+        padding: 0;
+        border-radius: 12px;
+        width: 460px;
+        position: relative;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        transform: translateY(0);
+        transition: transform 0.3s ease-out;
+    }
+
+        .modal-content:hover {
+            transform: translateY(-5px);
+        }
+
+    .modal-header {
+        background: #fee2e2;
+        padding: 1.5rem;
+        border-radius: 12px 12px 0 0;
+        text-align: center;
+        position: relative;
+    }
+
+    .warning-icon {
+        width: 64px;
+        height: 64px;
+        background: #dc2626;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        animation: pulseWarning 1.5s infinite;
+    }
+
+    @@keyframes pulseWarning {
+        0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+        }
+
+        70% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+        }
+
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+        }
+    }
+
+    .warning-icon i {
+        font-size: 2rem;
+        color: white;
+    }
+
+    .modal-title {
+        color: #991b1b;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .modal-body {
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .warning-message {
+        font-size: 1.1rem;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .warning-detail {
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+    }
+
+    .order-preview {
+        background: #f3f4f6;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .order-id {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .confirmation-input {
+        margin-top: 1.5rem;
+        position: relative;
+    }
+
+    .confirm-instruction {
+        margin-bottom: 0.75rem;
+        color: #4b5563;
+        font-size: 0.95rem;
+    }
+
+    .delete-text {
+        font-weight: 700;
+        color: #dc2626;
+        background: #fee2e2;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-family: monospace;
+    }
+
+    .confirm-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        padding-right: 40px;
+    }
+
+        .confirm-input:focus {
+            outline: none;
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+
+        .confirm-input::placeholder {
+            color: #9ca3af;
+        }
+
+    .input-validation {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(4px);
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+        .input-validation i {
+            color: #059669;
+            font-size: 1.1rem;
+        }
+
+        .input-validation.show {
+            opacity: 1;
+            transform: translateY(4px);
+        }
+
+    .modal-footer {
+        padding: 1.5rem;
+        background: #f9fafb;
+        border-radius: 0 0 12px 12px;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .btn-cancel, .btn-confirm {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-cancel {
+        background: #e5e7eb;
+        color: #4b5563;
+    }
+
+        .btn-cancel:hover {
+            background: #d1d5db;
+            transform: translateY(-2px);
+        }
+
+    .btn-confirm {
+        background: #dc2626;
+        color: white;
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+        .btn-confirm:not(:disabled) {
+            opacity: 1;
+            cursor: pointer;
+        }
+
+            .btn-confirm:not(:disabled):hover {
+                background: #b91c1c;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.3);
+            }
+
+            .btn-confirm:not(:disabled):active {
+                transform: translateY(0);
+            }
+
+    /* Hiệu ứng rung khi hiển thị */
+    .modal-content {
+        animation: shakeModal 0.5s ease-out;
+    }
+
+    @@keyframes shakeModal {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        10%, 30%, 50%, 70%, 90% {
+            transform: translateX(-5px);
+        }
+
+        20%, 40%, 60%, 80% {
+            transform: translateX(5px);
+        }
+    }
+
+    /* Hiệu ứng khi nhập sai */
+    @@keyframes shake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-5px);
+        }
+
+        75% {
+            transform: translateX(5px);
+        }
+    }
+
+    .shake {
+        animation: shake 0.3s ease-in-out;
+    }
+
+    .charts-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.chart-card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid #f0f0f0;
+}
+
+.chart-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+}
+
+.chart-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    background: #f0fdf4;
+}
+
+.chart-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #166534;
+    display: flex;
+    align-items: center;
+}
+
+.chart-title i {
+    margin-right: 0.75rem;
+    color: #22c55e;
+    font-size: 1.2rem;
+    background: rgba(34, 197, 94, 0.1);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.chart-body {
+    padding: 1.5rem;
+    height: 320px;
+    position: relative;
+}
+
+/* Trang trí cho Canvas */
+canvas {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.chart-card:hover canvas {
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.05));
+}
+
+/* Responsive */
+@@media (max-width: 768px) {
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-body {
+        height: 280px;
+    }
+}
+</style>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="~/Content/printThis.js"></script>
+
+    <script>
+        // Dữ liệu doanh thu theo tháng
+        var doanhThuTheoThang = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.DoanhThuTheoThang));
+
+        // Biểu đồ doanh thu theo tháng
+        var monthlyCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
+        var monthlyChart = new Chart(monthlyCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(doanhThuTheoThang),
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: Object.values(doanhThuTheoThang),
+                    backgroundColor: '#27ae60',
+                    borderColor: '#219a52',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return new Intl.NumberFormat('vi-VN').format(value) + ' VNĐ';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return new Intl.NumberFormat('vi-VN').format(context.raw) + ' VNĐ';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Dữ liệu so sánh với năm trước
+        var soSanhTheoThang = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.SoSanhTheoThang ?? new Dictionary<string, object>()));
+
+        var comparisonLabels = Object.keys(soSanhTheoThang);
+        var currentYearData = [];
+        var lastYearData = [];
+        var growthRateData = [];
+
+        for (var i = 0; i < comparisonLabels.length; i++) {
+            var data = soSanhTheoThang[comparisonLabels[i]];
+            currentYearData.push(data.NamNay);
+            lastYearData.push(data.NamTruoc);
+            growthRateData.push(data.TyLeTang);
+        }
+
+        // Biểu đồ so sánh với năm trước
+        var comparisonCtx = document.getElementById('yearComparisonChart').getContext('2d');
+        var comparisonChart = new Chart(comparisonCtx, {
+            type: 'line',
+            data: {
+                labels: comparisonLabels,
+                datasets: [
+                    {
+                        label: 'Năm @ViewBag.Nam',
+                        data: currentYearData,
+                        backgroundColor: 'rgba(39, 174, 96, 0.2)',
+                        borderColor: '#27ae60',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Năm @(ViewBag.Nam - 1)',
+                        data: lastYearData,
+                        backgroundColor: 'rgba(41, 128, 185, 0.2)',
+                        borderColor: '#2980b9',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Tỷ lệ tăng trưởng (%)',
+                        data: growthRateData,
+                        backgroundColor: 'rgba(231, 76, 60, 0)',
+                        borderColor: '#e74c3c',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#e74c3c',
+                        pointRadius: 4,
+                        fill: false,
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Doanh thu (VNĐ)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return new Intl.NumberFormat('vi-VN').format(value) + ' VNĐ';
+                            }
+                        }
+                    },
+                    y1: {
+                        beginAtZero: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Tỷ lệ tăng trưởng (%)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                var label = context.dataset.label || '';
+                                var value = context.raw || 0;
+
+                                if (label.indexOf('tăng trưởng') !== -1) {
+                                    return label + ': ' + value + '%';
+                                } else {
+                                    return label + ': ' + new Intl.NumberFormat('vi-VN').format(value) + ' VNĐ';
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Delete/order functionality
+        let orderIdToDelete = null;
+
+        function confirmDelete(orderId) {
+            orderIdToDelete = orderId;
+            document.getElementById('deleteOrderId').textContent = orderId;
+            document.getElementById('deleteModal').style.display = 'block';
+            document.querySelector('.modal-content').style.animation = 'shakeModal 0.5s ease-out';
+            document.getElementById('deleteConfirmation').value = '';
+            document.getElementById('deleteButton').disabled = true;
+            document.querySelector('.input-validation').classList.remove('show');
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('deleteModal');
+            modal.style.opacity = '0';
+            modal.style.transform = 'scale(0.8)';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modal.style.opacity = '1';
+                modal.style.transform = 'scale(1)';
+                orderIdToDelete = null;
+            }, 200);
+        }
+
+        // Thêm sự kiện kiểm tra input
+        document.getElementById('deleteConfirmation').addEventListener('input', function(e) {
+            const confirmText = e.target.value;
+            const deleteButton = document.getElementById('deleteButton');
+            const validation = document.querySelector('.input-validation');
+
+            if (confirmText === 'XÓA') {
+                deleteButton.disabled = false;
+                validation.classList.add('show');
+                e.target.style.borderColor = '#059669';
+            } else {
+                deleteButton.disabled = true;
+                validation.classList.remove('show');
+                e.target.style.borderColor = '#e5e7eb';
+            }
+        });
+
+        document.getElementById('deleteButton').addEventListener('click', function(e) {
+            const confirmText = document.getElementById('deleteConfirmation').value;
+            if (confirmText !== 'XÓA') {
+                const input = document.getElementById('deleteConfirmation');
+                input.classList.add('shake');
+                input.style.borderColor = '#dc2626';
+                setTimeout(() => {
+                    input.classList.remove('shake');
+                }, 300);
+                e.preventDefault();
+                return false;
+            }
+            deleteOrder();
+        });
+
+        function deleteOrder() {
+            if (!orderIdToDelete) return;
+
+            $.ajax({
+                url: '@Url.Action("Delete", "Order")',
+                type: 'POST',
+                data: { id: orderIdToDelete },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        window.location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                    closeDeleteModal();
+                },
+                error: function() {
+                    alert('Có lỗi xảy ra khi xóa đơn hàng');
+                    closeDeleteModal();
+                }
+            });
+        }
+
+        // Đóng modal khi click ngoài
+        window.onclick = function(event) {
+            var modal = document.getElementById('deleteModal');
+            if (event.target == modal) {
+                closeDeleteModal();
+            }
+        }
+
+        // Print functionality
+        jQuery(document).ready(function ($) {
+            $('#Print').on("click", function () {
+                $('.ViewPrint').printThis({
+                    debug: false,
+                    importCSS: true,
+                    importStyle: false,
+                    printContainer: true,
+                    loadCSS: "",
+                    pageTitle: "Báo cáo doanh thu năm @ViewBag.Nam",
+                    removeInline: false,
+                    printDelay: 333,
+                    header: null,
+                    footer: null,
+                    base: false,
+                    formValues: true,
+                    canvas: false,
+                    doctypeString: '...',
+                    removeScripts: false,
+                    copyTagClasses: false
+                });
+            });
+        });
+    </script>
+}
+

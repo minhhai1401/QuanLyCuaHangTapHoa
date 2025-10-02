@@ -1,0 +1,158 @@
+﻿@model QuanLyCuaHangTapHoa.Models.Catalog
+@{
+    ViewBag.Title = "Xóa danh mục";
+    Layout = "~/Views/Shared/_layoutadmin.cshtml";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Xóa Danh Mục</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-trash-alt"></i>
+                Xóa Danh Mục
+            </h1>
+        </div>
+
+        <div class="form-card">
+            <div class="delete-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Cảnh báo:</strong> Bạn có chắc chắn muốn xóa danh mục này? Hành động này không thể hoàn tác.
+            </div>
+
+            <div class="info-group">
+                <div class="info-item">
+                    <div class="info-label">Mã Danh Mục:</div>
+                    <div class="info-value">@Html.DisplayFor(model => model.CatalogCode)</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Nhãn Hiệu:</div>
+                    <div class="info-value">@Html.DisplayFor(model => model.CatalogName)</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Xuất Xứ:</div>
+                    <div class="info-value">@Html.DisplayFor(model => model.ProductOrigin)</div>
+                </div>
+            </div>
+
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-trash-alt"></i>
+                        Xác Nhận Xóa
+                    </button>
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Quay Lại
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</body>
+</html>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    body {
+        background: linear-gradient(135deg, #f6f8ff 0%, #f1f5ff 100%);
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-top: 2rem;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        color: white;
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .delete-warning {
+        background: #fee2e2;
+        border-left: 4px solid #ef4444;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 2rem;
+        color: #991b1b;
+    }
+
+    .info-group {
+        background: #f8fafc;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-item {
+        display: flex;
+        margin-bottom: 1rem;
+    }
+
+    .info-label {
+        width: 150px;
+        font-weight: 600;
+        color: #475569;
+    }
+
+    .info-value {
+        color: #1e293b;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: #ef4444;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #1e517b;
+        color: #475569;
+    }
+</style>

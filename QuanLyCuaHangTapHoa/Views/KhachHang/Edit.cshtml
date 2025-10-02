@@ -1,0 +1,377 @@
+﻿@model QuanLyCuaHangTapHoa.Models.KhachHang
+
+@{
+    ViewBag.Title = "Chỉnh sửa thông tin khách hàng";
+    Layout = "~/Views/Shared/_layoutadmin.cshtml";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chỉnh Sửa Thông Tin Khách Hàng</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container bg-gradient">
+        @using (Html.BeginForm("Edit", "KhachHang", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.idUser)
+
+            <div class="dashboard-header">
+                <h1 class="page-title">
+                    <i class="fas fa-user-edit"></i>
+                    Chỉnh Sửa Thông Tin Khách Hàng
+                </h1>
+                <div class="customer-info">
+                    Mã khách hàng: @Model.idUser
+                </div>
+            </div>
+
+            <div class="form-card">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Tên</label>
+                        @Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @class = "form-input" } })
+                        @Html.ValidationMessageFor(model => model.FirstName, "", new { @class = "validate" })
+                    </div>
+
+                    <div class="form-group">
+                        <label>Họ</label>
+                        @Html.EditorFor(model => model.LastName, new { htmlAttributes = new { @class = "form-input" } })
+                        @Html.ValidationMessageFor(model => model.LastName, "", new { @class = "validate" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">Email</label>
+                        @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-input", placeholder = "abcdef@gmail.com" } })
+                        @Html.ValidationMessageFor(model => model.Email, "", new { @class = "validate" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">Ngày sinh</label>
+                        @{
+                            var dateValue = Model.NgaySinh.HasValue ? Model.NgaySinh.Value.ToString("yyyy-MM-dd") : "";
+                        }
+                        <input type="date"
+                               name="NgaySinh"
+                               class="form-input"
+                               value="@dateValue" />
+                        @Html.ValidationMessageFor(model => model.NgaySinh, "", new { @class = "validate" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">CMND/CCCD</label>
+                        @Html.EditorFor(model => model.CMT, new { htmlAttributes = new { @class = "form-input" } })
+                        @Html.ValidationMessageFor(model => model.CMT, "", new { @class = "validate" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">Địa chỉ</label>
+                        @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-input" } })
+                        @Html.ValidationMessageFor(model => model.Address, "", new { @class = "validate" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">Số điện thoại</label>
+                        @Html.EditorFor(model => model.Sdt, new { htmlAttributes = new { @class = "form-input" } })
+                        @Html.ValidationMessageFor(model => model.Sdt, "", new { @class = "validate" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">Ảnh đại diện</label>
+                        <div class="upload-section">
+                            <div class="upload-container">
+                                <div class="upload-preview">
+                                    @if (!string.IsNullOrEmpty(Model.Picture))
+                                    {
+                                        <img id="thumbimage" class="preview-image" src="~/Hinh/KhachHang/@Model.Picture" style="display: block" />
+                                    }
+                                    else
+                                    {
+                                        <img id="thumbimage" class="preview-image" style="display: none" />
+                                    }
+                                </div>
+                                <div class="upload-controls">
+                                    <input type="file" name="file" id="file" class="file-input" accept="image/*" />
+                                    <label for="file" class="upload-button">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        Chọn ảnh mới
+                                    </label>
+                                    @if (!string.IsNullOrEmpty(Model.Picture))
+                                    {
+                                        <div class="current-image-info">
+                                            <p>Ảnh hiện tại: @Model.Picture</p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            @Html.ValidationMessageFor(model => model.Picture, "", new { @class = "validate" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="action-button">
+                        <i class="fas fa-save"></i>
+                        Lưu Thay Đổi
+                    </button>
+                    <a href="@Url.Action("Index","KhachHang")" class="cancel-button">
+                        <i class="fas fa-arrow-left"></i>
+                        Quay Lại
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</body>
+</html>
+
+<style>
+    /* Styles như trong hình */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .bg-gradient {
+        background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+        min-height: 100vh;
+        padding: 2rem;
+    }
+    .current-image-info {
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+
+    .preview-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+        border-radius: 0.5rem;
+    }
+
+    .upload-preview {
+        width: 200px;
+        height: 200px;
+        border: 2px dashed #e2e8f0;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background-color: #f8fafc;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        box-shadow: 0 10px 25px -5px rgba(0, 188, 212, 0.25);
+    }
+
+    .upload-section {
+        margin-top: 1rem;
+    }
+
+    .upload-container {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1rem;
+    }
+
+    .upload-preview {
+        width: 200px;
+        height: 200px;
+        border: 2px dashed #e2e8f0;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .preview-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+    }
+
+    .upload-controls {
+        flex: 1;
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .upload-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .upload-button:hover {
+            background: #f1f5f9;
+            border-color: #00bcd4;
+        }
+
+    @@media (max-width: 768px) {
+        .upload-container {
+            flex-direction: column;
+        }
+
+        .upload-preview {
+            width: 100%;
+            height: 300px;
+        }
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .form-card {
+        padding: 2rem;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-input {
+        padding: 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        outline: none;
+        transition: all 0.3s;
+    }
+
+        .form-input:focus {
+            border-color: #00bcd4;
+            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.1);
+        }
+
+    .file-input {
+        padding: 0.5rem;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        justify-content: flex-end;
+    }
+
+    .action-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: #00bcd4;
+        color: white;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+        .action-button:hover {
+            background: #0097a7;
+            transform: translateY(-1px);
+        }
+
+    .cancel-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: #e2e8f0;
+        color: #64748b;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+        .cancel-button:hover {
+            background: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+    .validate {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    @@media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+<script>
+    document.getElementById('file').onchange = function (e) {
+        // Kiểm tra nếu không có file được chọn
+        if (!this.files || !this.files[0]) return;
+
+        const file = this.files[0];
+
+        // Kiểm tra kích thước file (giới hạn 10MB)
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxSize) {
+            alert('Kích thước file không được vượt quá 5MB');
+            this.value = '';
+            return;
+        }
+
+        // Kiểm tra loại file
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!validImageTypes.includes(file.type)) {
+            alert('Vui lòng chọn file ảnh (JPEG, PNG, GIF)');
+            this.value = '';
+            return;
+        }
+
+        // Hiển thị ảnh preview
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const thumbimage = document.getElementById('thumbimage');
+            thumbimage.setAttribute('src', e.target.result);
+            thumbimage.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    };
+</script>

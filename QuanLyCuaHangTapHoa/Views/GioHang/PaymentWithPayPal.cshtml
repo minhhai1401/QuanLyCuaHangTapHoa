@@ -1,0 +1,65 @@
+﻿@model QuanLyCuaHangTapHoa.Models.PayPalModel
+@{
+    ViewBag.Title = "Thanh toán PayPal";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fab fa-paypal me-2"></i>
+                        Thanh toán qua PayPal
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>Thông tin đơn hàng:</h5>
+                        <p class="mb-2">Mã đơn hàng: @Model.item_name</p>
+                        <p class="mb-2">Số lượng: @Model.item_quantity sản phẩm</p>
+                        <p class="mb-4">Tổng tiền: $@Model.amount USD</p>
+                    </div>
+
+                    @using (Html.BeginForm(null, null, FormMethod.Post, new { action = @Model.actionURL }))
+                    {
+                        @Html.HiddenFor(model => model.cmd)
+                        @Html.HiddenFor(model => model.business)
+                        @Html.HiddenFor(model => model.no_shipping)
+                        @Html.HiddenFor(model => model.@return)
+                        @Html.HiddenFor(model => model.cancel_return)
+                        @Html.HiddenFor(model => model.notify_url)
+                        @Html.HiddenFor(model => model.currency_code)
+                        @Html.HiddenFor(model => model.item_name)
+                        @Html.HiddenFor(model => model.item_quantity)
+                        @Html.HiddenFor(model => model.amount)
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fab fa-paypal me-2"></i>
+                                Thanh toán ngay
+                            </button>
+                            <a href="@Url.Action("DatHang", "Giohang")" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Quay lại
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('form').on('submit', function() {
+                $(this).find('button[type="submit"]')
+                    .prop('disabled', true)
+                    .html('<span class="spinner-border spinner-border-sm me-2"></span>Đang chuyển hướng...');
+            });
+        });
+    </script>
+}

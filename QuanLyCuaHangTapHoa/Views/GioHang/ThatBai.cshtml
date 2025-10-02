@@ -1,0 +1,199 @@
+﻿@{
+    ViewBag.Title = "Thanh toán thất bại";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="payment-failed-page py-5">
+    <div class="container">
+        <div class="card shadow-sm border-0 payment-failed-card">
+            <div class="card-body p-5">
+                <div class="text-center">
+                    <!-- Animation Icon -->
+                    <div class="error-icon-wrapper mb-4">
+                        <i class="fas fa-times-circle text-danger error-icon"></i>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="content-wrapper">
+                        <h2 class="text-danger mb-3 fw-bold">Thanh toán thất bại!</h2>
+                        <p class="text-muted mb-4 lead">
+                            Rất tiếc, đơn hàng của bạn chưa được thanh toán thành công.
+                        </p>
+
+                        <!-- Error Message -->
+                        @if (TempData["error"] != null)
+                        {
+                            <div class="alert alert-danger mx-auto mb-4" style="max-width: 500px;">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                @TempData["error"]
+                            </div>
+                        }
+
+                        <!-- Divider -->
+                        <hr class="my-4 mx-auto" style="max-width: 300px;">
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons mt-4">
+                            <a href="@Url.Action("Index", "Giohang")"
+                               class="btn btn-primary btn-lg me-3 payment-btn">
+                                <i class="fas fa-shopping-cart me-2"></i>
+                                Quay lại giỏ hàng
+                            </a>
+                            <a href="@Url.Action("TrangChu", "User")"
+                               class="btn btn-outline-secondary btn-lg payment-btn">
+                                <i class="fas fa-home me-2"></i>
+                                Về trang chủ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .payment-failed-page {
+        min-height: 80vh;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        display: flex;
+        align-items: center;
+    }
+
+    .payment-failed-card {
+        max-width: 800px;
+        margin: 0 auto;
+        border-radius: 15px;
+        overflow: hidden;
+        animation: slideIn 0.5s ease-out;
+    }
+
+    .error-icon-wrapper {
+        height: 120px;
+        width: 120px;
+        background: rgba(220, 53, 69, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        animation: pulse 2s infinite;
+    }
+
+    .error-icon {
+        font-size: 4rem;
+        animation: shake 0.8s ease-in-out;
+    }
+
+    .content-wrapper {
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    .payment-btn {
+        min-width: 200px;
+        transition: all 0.3s ease;
+    }
+
+        .payment-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+    /* Animations */
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes shake {
+        0%, 100% {
+            transform: rotate(0);
+        }
+
+        20%, 60% {
+            transform: rotate(-12deg);
+        }
+
+        40%, 80% {
+            transform: rotate(12deg);
+        }
+    }
+
+    @@keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 20px rgba(220, 53, 69, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+        }
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 576px) {
+        .payment-failed-card {
+            margin: 1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .payment-btn {
+            width: 100%;
+            margin: 0 !important;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Toast notification
+            @if (TempData["error"] != null)
+            {
+                <text>
+                toastr.error('@TempData["error"]', 'Thất bại', {
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: "toast-top-right",
+                    timeOut: 5000,
+                    extendedTimeOut: 2000
+                });
+                </text>
+            }
+
+            // Smooth scroll for buttons
+            $('.payment-btn').on('click', function(e) {
+                e.preventDefault();
+                const href = $(this).attr('href');
+                $('html, body').animate({scrollTop: 0}, 300, function() {
+                    window.location.href = href;
+                });
+            });
+        });
+    </script>
+}

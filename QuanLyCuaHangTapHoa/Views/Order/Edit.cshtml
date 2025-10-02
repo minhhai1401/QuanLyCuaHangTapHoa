@@ -1,0 +1,151 @@
+﻿@model QuanLyCuaHangTapHoa.Models.Order
+
+@{
+    ViewBag.Title = "Chỉnh sửa đơn hàng";
+    bool isEditable = ViewBag.IsEditable;
+}
+
+<div class="container mt-4">
+    <h2>
+        Chỉnh sửa đơn hàng #@Model.ID
+        <span class="badge bg-@(isEditable ? "primary" : "warning")">@Model.Status</span>
+    </h2>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-6">
+            Thông tin đơn hàng - giữ nguyên như cũ
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Thông tin đơn hàng</h4>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Mã đơn hàng:</dt>
+                        <dd class="col-sm-8">#@Model.ID</dd>
+
+                        <dt class="col-sm-4">Ngày đặt:</dt>
+                        <dd class="col-sm-8">@(Model.NgayDat?.ToString("dd/MM/yyyy HH:mm"))</dd>
+
+                        <dt class="col-sm-4">Địa chỉ:</dt>
+                        <dd class="col-sm-8">@Model.Address</dd>
+
+                        <dt class="col-sm-4">Tổng tiền:</dt>
+                        <dd class="col-sm-8">@String.Format("{0:N0} VNĐ", Model.ThanhTien)</dd>
+
+                        <dt class="col-sm-4">Thanh toán:</dt>
+                        <dd class="col-sm-8">@(Model.Payment == true ? "Đã thanh toán" : "Chưa thanh toán")</dd>
+
+                        <dt class="col-sm-4">Nhân viên:</dt>
+                        <dd class="col-sm-8">@(Model.NhanVien?.FullName ?? "Chưa có")</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            Form cập nhật trạng thái
+            <div class="card">
+                <div class="card-header">
+                    <h4>Cập nhật trạng thái</h4>
+                </div>
+                <div class="card-body">
+                    @if (isEditable)
+                    {
+                        using (Html.BeginForm())
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.HiddenFor(m => m.ID)
+
+                            <div class="form-group mb-3">
+                                <label class="control-label">Trạng thái hiện tại:</label>
+                                @Html.DropDownList("Status", (SelectList)ViewBag.Status, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(m => m.Status, "", new { @class = "text-danger" })
+                            </div>
+
+                            <div class="alert alert-info">
+                                <strong>Lưu ý:</strong>
+                                <ul class="mb-0">
+                                    <li>Khi chuyển sang "Đang giao hàng", ngày giao sẽ được cập nhật sau 3 ngày.</li>
+                                    <li>Khi chuyển sang "Hoàn thành", số lượng sản phẩm trong kho sẽ được cập nhật.</li>
+                                    <li>Sau khi đơn hàng "Hoàn thành" hoặc "Đã hủy", không thể chỉnh sửa.</li>
+                                </ul>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Lưu thay đổi
+                                </button>
+                                @Html.ActionLink("Quay lại", "Index", null, new { @class = "btn btn-secondary" })
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <strong>Thông báo:</strong> Đơn hàng đã @Model.Status, không thể chỉnh sửa.
+                        </div>
+                        <div class="form-group">
+                            @Html.ActionLink("Quay lại", "Index", null, new { @class = "btn btn-secondary" })
+                            @if (Model.Status == "Đã hủy" || Model.Status == "Hoàn thành")
+                            {
+                                using (Html.BeginForm("Delete", "Order", new { id = Model.ID }, FormMethod.Post))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-danger mt-2" onclick="return confirm('Bạn có chắc chắn muốn xóa đơn hàng này?');">
+                                        <i class="fas fa-trash"></i> Xóa đơn hàng
+                                    </button>
+                                }
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    Chi tiết đơn hàng
+    <div class="card mt-4">
+        <div class="card-header">
+            <h4>Chi tiết đơn hàng</h4>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Số lượng</th>
+                        <th>Đơn giá</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Order_Details)
+                    {
+                        <tr>
+                            <td>@item.Product.ProductName</td>
+                            <td>@item.SoLuong</td>
+                            <td>@String.Format("{0:N0} VNĐ", item.Price)</td>
+                            <td>@String.Format("{0:N0} VNĐ", item.SoLuong * item.Price)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(document).ready(function () {
+            // Hiển thị thông báo thành công nếu có
+            @if (TempData["Message"] != null)
+            {
+                <text>
+                alert('@TempData["Message"]');
+                </text>
+            }
+        });
+    </script>
+}

@@ -1,0 +1,421 @@
+﻿@model QuanLyCuaHangTapHoa.Models.NhanVien
+
+@{
+    ViewBag.Title = "Chỉnh sửa thông tin nhân viên";
+    Layout = "~/Views/Shared/_layoutadmin.cshtml";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chỉnh Sửa Thông Tin Nhân Viên</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        @using (Html.BeginForm("Edit", "NhanVien", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+
+            <div class="dashboard-header">
+                <h1 class="page-title">
+                    <i class="fas fa-user-edit"></i>
+                    Chỉnh Sửa Thông Tin Nhân Viên
+                </h1>
+                <div class="employee-info">
+                    Mã nhân viên: @Model.Id
+                </div>
+            </div>
+
+            <div class="form-card">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="control-label">Họ và tên</label>
+                        @Html.EditorFor(model => model.FullName, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.FullName, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">Email</label>
+                        @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control", placeholder = "abcdef@gmail.com" } })
+                        @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">Mật khẩu</label>
+                        @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @type = "password", @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">Chức Vụ</label>
+                        @Html.DropDownList("MaChucVu", null, htmlAttributes: new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.MaChucVu, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">Ngày sinh</label>
+                        @Html.EditorFor(model => model.NgaySinh, new { htmlAttributes = new { @type = "date", @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.NgaySinh, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">Địa chỉ thường trú</label>
+                        @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">Số điện thoại</label>
+                        @Html.EditorFor(model => model.Sdt, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Sdt, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">Giới tính</label>
+                        <div class="gender-select">
+                            <label class="gender-option">
+                                @Html.RadioButtonFor(model => model.Sex, true, new { @id = "male" })
+                                <span class="gender-badge male">
+                                    <i class="fas fa-mars"></i>
+                                    Nam
+                                </span>
+                            </label>
+                            <label class="gender-option">
+                                @Html.RadioButtonFor(model => model.Sex, false, new { @id = "female" })
+                                <span class="gender-badge female">
+                                    <i class="fas fa-venus"></i>
+                                    Nữ
+                                </span>
+                            </label>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.Sex, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="upload-section">
+                    <label class="control-label">Ảnh đại diện</label>
+                    <div class="upload-container">
+                        <div class="upload-preview">
+                            <img id="thumbimage" class="preview-image" style="display: none" />
+                        </div>
+                        <div class="upload-controls">
+                            <input type="file" name="file" id="file" class="file-input" />
+                            <label for="file" class="upload-button">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                Chọn ảnh
+                            </label>
+                        </div>
+                    </div>
+                    @Html.ValidationMessageFor(model => model.Picture, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-save">
+                        <i class="fas fa-save"></i>
+                        Lưu Thay Đổi
+                    </button>
+                    <a href="@Url.Action("Index","NhanVien")" class="btn btn-cancel">
+                        <i class="fas fa-arrow-left"></i>
+                        Quay Lại
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</body>
+</html>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    body {
+        background: linear-gradient(135deg, #f6fff8 0%, #f1fff5 100%);
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.25);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: rotate 20s linear infinite;
+        }
+
+    @@keyframes rotate {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .employee-info {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        position: relative;
+        z-index: 1;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 0.5rem;
+    }
+
+    .control-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+        .form-control:focus {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+            outline: none;
+        }
+
+    .text-danger {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .gender-select {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .gender-option {
+        cursor: pointer;
+    }
+
+        .gender-option input[type="radio"] {
+            display: none;
+        }
+
+    .gender-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+        .gender-badge.male {
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+
+        .gender-badge.female {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+    .gender-option input[type="radio"]:checked + .gender-badge.male {
+        background: #dcfce7;
+        border-color: #16a34a;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+    }
+
+    .gender-option input[type="radio"]:checked + .gender-badge.female {
+        background: #fee2e2;
+        border-color: #dc2626;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    }
+
+    .gender-badge i {
+        font-size: 1rem;
+    }
+
+    .gender-option:hover .gender-badge.male {
+        background: #dcfce7;
+    }
+
+    .gender-option:hover .gender-badge.female {
+        background: #fee2e2;
+    }
+
+    .upload-section {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .upload-container {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1rem;
+    }
+
+    .upload-preview {
+        width: 200px;
+        height: 200px;
+        border: 2px dashed #e2e8f0;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .preview-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+    }
+
+    .upload-controls {
+        flex: 1;
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .upload-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .upload-button:hover {
+            background: #f1f5f9;
+            border-color: #22c55e;
+        }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-save {
+        background: #22c55e;
+        color: white;
+    }
+
+        .btn-save:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+        }
+
+    .btn-cancel {
+        background: #f1f5f9;
+        color: #64748b;
+        text-decoration: none;
+    }
+
+        .btn-cancel:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+
+    @@media (max-width: 768px) {
+        .upload-container {
+            flex-direction: column;
+        }
+
+        .upload-preview {
+            width: 100%;
+            height: 300px;
+        }
+    }
+</style>
+
+<script>document.getElementById('file').onchange = function (e) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        document.getElementById('thumbimage').setAttribute('src', e.target.result);
+        document.getElementById('thumbimage').style.display = 'block';
+    };
+    reader.readAsDataURL(this.files[0]);
+};</script>
